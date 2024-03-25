@@ -25,10 +25,12 @@ RUN groupadd -g 1000 www \
 # Copy the application code into the container
 COPY --chown=www:www . /var/www/html
 
-# Copy composer files and install dependencies
-COPY composer.json composer.lock ./
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN composer install --no-scripts --no-autoloader
+# Install Composer globally
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Install Composer dependencies before copying the application code
+COPY composer.* ./
+RUN composer install --no-dev --prefer-dist --optimize-autoloader
 
 # Change user to non-root user
 USER www
