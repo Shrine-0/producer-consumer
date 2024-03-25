@@ -1,0 +1,30 @@
+version: "3"
+services:
+    cust_mobile-app-consumer-producer:
+        build:
+            context: .
+        image: cust_mobile-app-consumer-producer
+        container_name: cust_mobile-app-consumer-producer
+        restart: always
+        volumes:
+            - ./:/var/www/html/
+        ports:
+            - "9001:8000"
+        networks:
+            - cust_mobile-app-consumer-producer-network
+
+    cust_mobile-app-consumer-producer-rabbitmq:
+        image: rabbitmq:3-management
+        container_name: cust_mobile-app-consumer-producer-rabbitmq
+        ports:
+            - "5672:5672" # AMQP
+            - "15672:15672" # RabbitMQ Management UI
+        environment:
+            - RABBITMQ_DEFAULT_USER=guest
+            - RABBITMQ_DEFAULT_PASS=guest
+        networks:
+            - cust_mobile-app-consumer-producer-network
+#Docker Networks
+networks:
+    cust_mobile-app-consumer-producer-network:
+        external: true
