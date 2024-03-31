@@ -30,15 +30,15 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install Composer dependencies before copying the application code
 COPY composer.* ./
-RUN composer install --no-dev --prefer-dist --optimize-autoloader
+RUN composer install --no-dev --prefer-dist --optimize-autoloader --ignore-platform-req=ext-sockets
 
 # Change user to non-root user
 USER www
 
-# Expose port 8000 and start PHP server with Laravel Octane
-EXPOSE 8000
+# Expose port 8000
+# EXPOSE 8000
 
 # Command to run the consumer
-# CMD ["php", "artisan", "rabbitmq:consume", "queue1", "queue2"]
-CMD ["php", "artisan", "serve", "--host=0.0.0.0"]
+# CMD ["sh", "run_consumer.sh"]
+# CMD ["php", "artisan", "serve", "--host=0.0.0.0"]
 
