@@ -71,18 +71,8 @@ build_prod:
 
 publish_staging:
   stage: publish
-  before_script:
-    - |
-      curl -f -X POST "http://portainer-staging.wlink.com.np:9000/api/endpoints/3/docker/images/create?fromImage=$APP_IMAGE" \
-      -H "X-Registry-Auth: $STAGE_PORTAINER_REGISTRY_AUTH" \
-      -H "x-api-key: $STAGE_PORTAINER_X_API_KEY"
-
-      curl -f -X POST "http://portainer-staging.wlink.com.np:9000/api/endpoints/3/docker/images/create?fromImage=$SUPERVISOR_IMAGE" \
-      -H "X-Registry-Auth: $STAGE_PORTAINER_REGISTRY_AUTH" \
-      -H "x-api-key: $STAGE_PORTAINER_X_API_KEY"
-
   script:
-    - curl -f -X POST "$STAGE_PORTAINER_WEBHOOK"
+    - curl -f -X POST "$STAGE_SUPERVISOR_WEBHOOK"
   tags:
     - php-shell
   only:
@@ -91,7 +81,6 @@ publish_staging:
 publish_prod:
   stage: publish
   script:
-    - curl -f -X POST "$PROD_APP_WEBHOOK"
     - curl -f -X POST "$PROD_SUPERVISOR_WEBHOOK"
   tags:
     - php-shell

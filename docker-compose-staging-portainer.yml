@@ -7,7 +7,7 @@ services:
     restart: always
     container_name: cust_mobile-app-consumer-supervisor
     networks:
-      - crm_command_network
+      - cust_mobile-app-consumer-network
     environment:
       - TZ="Asia/Kathmandu"
     logging:
