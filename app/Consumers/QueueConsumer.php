@@ -20,7 +20,7 @@ abstract class QueueConsumer
     /**
      * Get name of queue
      */
-    abstract protected function getQueueName(): string;
+    abstract protected function getEventName(): string;
 
     /**
      * Transform the payload before posting to the destination API
@@ -33,11 +33,21 @@ abstract class QueueConsumer
     abstract protected function getHttpMethod(): string;
 
     /**
+     * Get query params for the source API
+     */
+    abstract protected function sourceApiQueryParams(): string;
+
+    /**
+     * Get query params for the destination API
+     */
+    abstract protected function destinationApiQueryParams(): string;
+
+    /**
      * Prepare source API request URL
      */
     protected function getSourceApiUrl(): string
     {
-        return Config::get('services.' . $this->getQueueName() . '.source_api') . $this->username;
+        return Config::get('services.' . $this->getEventName() . '.source_api') . $this->username . $this->sourceApiQueryParams();
     }
 
     /**
@@ -45,7 +55,7 @@ abstract class QueueConsumer
      */
     protected function getDestinationApiUrl(): string
     {
-        return Config::get('services.' . $this->getQueueName() . '.destination_api') . $this->username;
+        return Config::get('services.' . $this->getEventName() . '.destination_api') . $this->username . $this->destinationApiQueryParams();
     }
 
     /**
@@ -58,9 +68,7 @@ abstract class QueueConsumer
             $transformedData = $this->transformPayload($sourceData);
             $this->performHttpRequest($transformedData);
         } catch (\Exception $e) {
-            // Log the error
-            Log::error("Error processing queue '{$this->getQueueName()}': " . $e->getMessage());
-            // Handle the error, for example, retrying the operation or logging the failure
+            Log::error("Error processing queue '{$this->getEventName()}': " . $e->getMessage());
             $this->handleError($e);
         }
     }
@@ -70,10 +78,15 @@ abstract class QueueConsumer
      */
     protected function getDataFromSourceApi()
     {
+        echo ($this->getSourceApiUrl());
+
         $response = $this->httpClient->get($this->getSourceApiUrl());
         if ($response->getStatusCode() !== 200) {
             throw new \Exception("Source API returned error: " . $response->getBody()->getContents());
         }
+
+        print_r(json_decode($response->getBody()->getContents()));
+
         return json_decode($response->getBody(), true);
     }
 
@@ -82,14 +95,18 @@ abstract class QueueConsumer
      */
     protected function performHttpRequest($data)
     {
+        echo ($this->getDestinationApiUrl());
+
         $method = $this->getHttpMethod();
         $response = $this->httpClient->$method($this->getDestinationApiUrl(), [
-            'json' => $data,
+            'form_params' => $data,
         ]);
         // Check the response status code and handle any errors if necessary
         if ($response->getStatusCode() !== 200) {
             throw new \Exception("Destination API returned error: " . $response->getBody()->getContents());
         }
+
+        print_r(json_decode($response->getBody()->getContents()));
     }
 
     /**
@@ -98,7 +115,6 @@ abstract class QueueConsumer
     protected function handleError(\Exception $e)
     {
         // Perform actions such as retrying, logging, or sending notifications
-        // For now, we are just logging the error
         Log::error("Error handling failed: " . $e->getMessage());
     }
 }
