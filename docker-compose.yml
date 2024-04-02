@@ -1,31 +1,31 @@
 version: "3"
 services:
     #command
-    # cust_mobile-app-consumer-producer:
+    # cust_mobile-app-consumer:
     #     build:
     #         context: .
-    #     image: cust_mobile-app-consumer-producer
-    #     container_name: cust_mobile-app-consumer-producer
+    #     image: cust_mobile-app-consumer
+    #     container_name: cust_mobile-app-consumer
     #     restart: always
     #     volumes:
     #         - ./:/var/www/html/
     #     ports:
     #         - "9001:8000"
     #     networks:
-    #         - cust_mobile-app-consumer-producer-network
+    #         - cust_mobile-app-consumer-network
 
     #composer
     composer:
         image: composer:latest
-        container_name: cust_mobile-app-consumer-producer-composer
+        container_name: cust_mobile-app-consumer-composer
         volumes:
             - .:/app
         command: install
 
     #rabbitmq
-    # cust_mobile-app-consumer-producer-rabbitmq:
+    # cust_mobile-app-consumer-rabbitmq:
     #     image: rabbitmq:3-management
-    #     container_name: cust_mobile-app-consumer-producer-rabbitmq
+    #     container_name: cust_mobile-app-consumer-rabbitmq
     #     ports:
     #         - "5672:5672" # AMQP
     #         - "15672:15672" # RabbitMQ Management UI
@@ -36,23 +36,23 @@ services:
     #     volumes:
     #         - ./rabbitmq-data:/var/lib/rabbitmq
     #     networks:
-    #         - cust_mobile-app-consumer-producer-network
+    #         - cust_mobile-app-consumer-network
 
     #supervisor
-    cust_mobile-app-consumer-producer-supervisor:
+    cust_mobile-app-consumer-supervisor:
         build:
             context: .
             dockerfile: supervisor.Dockerfile
-        image: cust_mobile-app-consumer-producer-supervisor
+        image: cust_mobile-app-consumer-supervisor
         restart: always
-        container_name: cust_mobile-app-consumer-producer-supervisor
+        container_name: cust_mobile-app-consumer-supervisor
         volumes:
             - ./:/var/www/html
             - ./supervisord/supervisord.conf:/etc/supervisord.conf
         networks:
-            - cust_mobile-app-consumer-producer-network
+            - cust_mobile-app-consumer-network
 
 #Docker Networks
 networks:
-    cust_mobile-app-consumer-producer-network:
+    cust_mobile-app-consumer-network:
         external: true

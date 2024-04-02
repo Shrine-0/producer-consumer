@@ -36,7 +36,7 @@ build_staging:
     - chmod +x setup_dev_env.sh
     - ./setup_dev_env.sh
     - docker build -t $APP_IMAGE .
-    - docker build -t $SUPERVISOR_IMAGE --file Dockerfile.supervisord .
+    - docker build -t $SUPERVISOR_IMAGE --file supervisord.Dockerfile .
   script:
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN
     - docker push $APP_IMAGE
@@ -56,7 +56,7 @@ build_prod:
     - chmod +x setup_prod_env.sh
     - ./setup_prod_env.sh
     - docker build -t $APP_IMAGE .
-    - docker build -t $SUPERVISOR_IMAGE --file Dockerfile.supervisord .
+    - docker build -t $SUPERVISOR_IMAGE --file supervisord.Dockerfile .
   script:
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN
     - docker push $APP_IMAGE
