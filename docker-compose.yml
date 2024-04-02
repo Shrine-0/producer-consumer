@@ -23,17 +23,20 @@ services:
         command: install
 
     #rabbitmq
-    cust_mobile-app-consumer-producer-rabbitmq:
-        image: rabbitmq:3-management
-        container_name: cust_mobile-app-consumer-producer-rabbitmq
-        ports:
-            - "5672:5672" # AMQP
-            - "15672:15672" # RabbitMQ Management UI
-        environment:
-            - RABBITMQ_DEFAULT_USER=guest
-            - RABBITMQ_DEFAULT_PASS=guest
-        networks:
-            - cust_mobile-app-consumer-producer-network
+    # cust_mobile-app-consumer-producer-rabbitmq:
+    #     image: rabbitmq:3-management
+    #     container_name: cust_mobile-app-consumer-producer-rabbitmq
+    #     ports:
+    #         - "5672:5672" # AMQP
+    #         - "15672:15672" # RabbitMQ Management UI
+    #     environment:
+    #         - RABBITMQ_DEFAULT_USER=guest
+    #         - RABBITMQ_DEFAULT_PASS=guest
+    #         - RABBITMQ_DEFAULT_VHOST=cmag
+    #     volumes:
+    #         - ./rabbitmq-data:/var/lib/rabbitmq
+    #     networks:
+    #         - cust_mobile-app-consumer-producer-network
 
     #supervisor
     cust_mobile-app-consumer-producer-supervisor:
