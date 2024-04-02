@@ -30,42 +30,42 @@ class ConsumerCommand extends Command
      */
     public function handle()
     {
-        $queueName = $this->argument('queue');
+        $queue = $this->argument('queue');
 
         $connection = new AMQPStreamConnection(
             env('RABBITMQ_HOST'),
             env('RABBITMQ_PORT'),
             env('RABBITMQ_USER'),
-            env('RABBITMQ_PASSWORD')
+            env('RABBITMQ_PASSWORD'),
+            env('RABBITMQ_VHOST')
         );
 
         $channel = $connection->channel();
 
-        $this->declareQueue($channel, $queueName);
+        $this->declareExchangeQueue($channel, $queue);
 
-        $this->info(" [*] Waiting for messages in $queueName. To exit press CTRL+C");
+        $this->info(" [*] Waiting for messages in $queue. To exit press CTRL+C");
 
-        $callback = function ($msg) use ($queueName) {
+        $callback = function ($msg) use ($queue) {
 
-            $this->info(" [x] Received in queue :");
-            $this->line($msg->body);
+            $this->info(" [x] Received in queue : $msg->body");
 
-            // NEED TO GET USERNAME HERE
-            $username = 'samirhusen_home'; // Default username for now
+            $message = json_decode($msg->body, true);
+            $username = $message['username'];
 
             try {
-                $consumer = $this->getConsumer($queueName, $username);
+                $consumer = $this->getConsumer($queue, $username);
                 $consumer->processQueue($msg->body);
-                $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
             } catch (\Exception $e) {
                 $this->error("Error processing message: " . $e->getMessage());
-                // Log the error
                 Log::error("Error processing message: " . $e->getMessage());
+            } finally {
+                $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
             }
         };
 
         $channel->basic_consume(
-            $queueName,
+            $queue,
             '',
             false,
             false,
@@ -84,20 +84,16 @@ class ConsumerCommand extends Command
         return Command::SUCCESS;
     }
 
-    protected function declareQueue($channel, $queueName)
+    protected function declareExchangeQueue($channel, $queue)
     {
-        $channel->queue_declare(
-            $queueName,
-            false,
-            true,
-            false,
-            false
-        );
+        $channel->exchange_declare($queue, "fanout", false, true, false);
+        $channel->queue_declare($queue, false, true, false, false);
+        $channel->queue_bind($queue, $queue);
     }
 
     protected function getConsumer($queueName, $username): QueueConsumer
     {
-        $className = 'App\\Consumers\\' . $queueName . 'Consumer';
+        $className = 'App\\Consumers\\' . $queueName . 'QueueConsumer';
         if (class_exists($className)) {
             return new $className($username);
         } else {
