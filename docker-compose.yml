@@ -42,7 +42,7 @@ services:
     cust_mobile-app-consumer-supervisor:
         build:
             context: .
-            dockerfile: supervisor.Dockerfile
+            dockerfile: supervisord.Dockerfile
         image: cust_mobile-app-consumer-supervisor
         restart: always
         container_name: cust_mobile-app-consumer-supervisor
