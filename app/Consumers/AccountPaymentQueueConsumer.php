@@ -9,25 +9,23 @@ class AccountPaymentQueueConsumer extends QueueConsumer
         return "AccountPayment";
     }
 
-    protected function transformPayload($data)
+    protected function sourceApiConfig($username): array
     {
-        $data = $data['response'][0];
-        $data['client_name'] = $data['username'] . rand();
-        return $data;
+        return [];
     }
 
-    protected function getHttpMethod(): string
+    protected function transformPayload($data): array
     {
-        return "PATCH";
+        return [];
     }
 
-    protected function sourceApiQueryParams(): string
+    protected function getDestinationApiHttpMethod(): string
     {
         return "";
     }
 
     protected function destinationApiQueryParams(): string
     {
-        return "?event=customerInfo";
+        return "";
     }
 }

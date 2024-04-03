@@ -9,21 +9,40 @@ class OnUserCreateQueueConsumer extends QueueConsumer
         return "OnUserCreate";
     }
 
-    protected function transformPayload($data)
+    protected function sourceApiConfig($username): array
     {
-        $data = $data['response'][0];
-        $data['client_name'] = $data['username'] . rand();
+        $data = [
+            [
+                "api" => "https://services.wlink.com.np/customers/customers/$username",
+                "headers" => [
+                    "headers" => [
+                        "Authorization" => "Basic aW50X21vYmlsZWFwcDpWV0paZXBXbWNxM2pha0hr"
+                    ]
+                ],
+                "method" => "get"
+            ],
+            [
+                "api" => "https://services.wlink.com.np/customers/customerinfos/$username",
+                "headers" => [
+                    "headers" => [
+                        "Authorization" => "Basic aW50X21vYmlsZWFwcDpWV0paZXBXbWNxM2pha0hr"
+                    ]
+                ],
+                "method" => "get"
+            ]
+        ];
         return $data;
     }
 
-    protected function getHttpMethod(): string
+    protected function transformPayload($data): array
     {
-        return "PATCH";
+        // transformation with foreach
+        return $data;
     }
 
-    protected function sourceApiQueryParams(): string
+    protected function getDestinationApiHttpMethod(): string
     {
-        return "";
+        return "PATCH";
     }
 
     protected function destinationApiQueryParams(): string
