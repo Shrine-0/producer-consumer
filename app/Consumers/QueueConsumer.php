@@ -23,32 +23,24 @@ abstract class QueueConsumer
     abstract protected function getEventName(): string;
 
     /**
+     * Source api configurations
+     */
+    abstract protected function sourceApiConfig($username): array;
+
+    /**
      * Transform the payload before posting to the destination API
      */
-    abstract protected function transformPayload($data);
+    abstract protected function transformPayload($data): array;
 
     /**
      * Get HTTP method for the destination API
      */
-    abstract protected function getHttpMethod(): string;
-
-    /**
-     * Get query params for the source API
-     */
-    abstract protected function sourceApiQueryParams(): string;
+    abstract protected function getDestinationApiHttpMethod(): string;
 
     /**
      * Get query params for the destination API
      */
     abstract protected function destinationApiQueryParams(): string;
-
-    /**
-     * Prepare source API request URL
-     */
-    protected function getSourceApiUrl(): string
-    {
-        return Config::get('services.' . $this->getEventName() . '.source_api') . $this->username . $this->sourceApiQueryParams();
-    }
 
     /**
      * Prepare destination API request URL
@@ -59,12 +51,20 @@ abstract class QueueConsumer
     }
 
     /**
+     * Prepare destination API KEY
+     */
+    protected function getDestinationApiKey(): string
+    {
+        return Config::get('services.' . $this->getEventName() . '.destination_api_key') . $this->username . $this->destinationApiQueryParams();
+    }
+
+    /**
      * Fetch data from source API and perform HTTP request after payload transformation
      */
-    public function processQueue($data)
+    public function processQueue($username)
     {
         try {
-            $sourceData = $this->getDataFromSourceApi();
+            $sourceData = $this->getDataFromSourceApi($username);
             $transformedData = $this->transformPayload($sourceData);
             $this->performHttpRequest($transformedData);
         } catch (\Exception $e) {
@@ -76,18 +76,19 @@ abstract class QueueConsumer
     /**
      * Get data from source API
      */
-    protected function getDataFromSourceApi()
+    protected function getDataFromSourceApi($username)
     {
-        echo ($this->getSourceApiUrl());
+        $apis = $this->sourceApiConfig($username);
 
-        $response = $this->httpClient->get($this->getSourceApiUrl());
-        if ($response->getStatusCode() !== 200) {
-            throw new \Exception("Source API returned error: " . $response->getBody()->getContents());
+        $data = [];
+        foreach ($apis as $key => $value) {
+            $response[$key] = $this->httpClient->get(
+                $value['api'],
+                $value['headers']
+            );
+            $data[$key] = json_decode($response[$key]->getBody(), true);
         }
-
-        print_r(json_decode($response->getBody()->getContents()));
-
-        return json_decode($response->getBody(), true);
+        return $data;
     }
 
     /**
@@ -95,18 +96,19 @@ abstract class QueueConsumer
      */
     protected function performHttpRequest($data)
     {
-        echo ($this->getDestinationApiUrl());
+        // echo ($this->getDestinationApiUrl());
 
-        $method = $this->getHttpMethod();
+        $method = $this->getDestinationApiHttpMethod();
         $response = $this->httpClient->$method($this->getDestinationApiUrl(), [
             'form_params' => $data,
         ]);
+
         // Check the response status code and handle any errors if necessary
         if ($response->getStatusCode() !== 200) {
             throw new \Exception("Destination API returned error: " . $response->getBody()->getContents());
         }
 
-        print_r(json_decode($response->getBody()->getContents()));
+        // print_r(json_decode($response->getBody()->getContents()));
     }
 
     /**
