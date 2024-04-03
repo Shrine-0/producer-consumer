@@ -30,4 +30,10 @@ class OnUserCreateQueueConsumer extends QueueConsumer
     {
         return "?event=customerInfo";
     }
+
+    protected function getHeader(): array
+    {
+        $type = 'Basic';
+        return ['Authorization' => $type . " aW50X21vYmlsZWFwcDpWV0paZXBXbWNxM2pha0hr"];
+    }
 }
