@@ -55,7 +55,7 @@ class ConsumerCommand extends Command
 
             try {
                 $consumer = $this->getConsumer($queue, $username);
-                $consumer->processQueue($msg->body);
+                $consumer->processQueue($username);
             } catch (\Exception $e) {
                 $this->error("Error processing message: " . $e->getMessage());
                 Log::error("Error processing message: " . $e->getMessage());
