@@ -1,0 +1,7 @@
+docker-compose*.yml
+.git
+.gitignore
+setup_*.sh
+Dockerfile*
+README.md
+deploy
