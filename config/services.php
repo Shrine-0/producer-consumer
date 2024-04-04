@@ -18,7 +18,7 @@ return [
     //     'destination_api_key' => '',
     // ],
     'OnUserCreate' => [
-        'destination_api' => 'https://custmobileappbs-staging.wlink.com.np/v1/base/update/',
+        'destination_api' => 'https://custmobileappbs-staging.wlink.com.np/v1/base/insert/',
         'destination_api_key' => '',
     ],
     'PlanMigration' => [
