@@ -40,14 +40,14 @@ abstract class QueueConsumer
     /**
      * Get query params for the destination API
      */
-    abstract protected function destinationApiQueryParams(): string;
+    abstract protected function destinationApiQueryParams($username): string;
 
     /**
      * Prepare destination API request URL
      */
     protected function getDestinationApiUrl(): string
     {
-        return Config::get('services.' . $this->getEventName() . '.destination_api') . $this->username . $this->destinationApiQueryParams();
+        return Config::get('services.' . $this->getEventName() . '.destination_api') . $this->destinationApiQueryParams($this->username);
     }
 
     /**
@@ -55,7 +55,7 @@ abstract class QueueConsumer
      */
     protected function getDestinationApiKey(): string
     {
-        return Config::get('services.' . $this->getEventName() . '.destination_api_key') . $this->username . $this->destinationApiQueryParams();
+        return Config::get('services.' . $this->getEventName() . '.destination_api_key');
     }
 
     /**
@@ -78,10 +78,10 @@ abstract class QueueConsumer
      */
     protected function getDataFromSourceApi($username)
     {
-        $apis = $this->sourceApiConfig($username);
+        $apiconfigs = $this->sourceApiConfig($username);
 
         $data = [];
-        foreach ($apis as $key => $value) {
+        foreach ($apiconfigs as $key => $value) {
             $response[$key] = $this->httpClient->get(
                 $value['api'],
                 $value['headers']
@@ -96,11 +96,14 @@ abstract class QueueConsumer
      */
     protected function performHttpRequest($data)
     {
-        // echo ($this->getDestinationApiUrl());
+        echo ($this->getDestinationApiUrl());
 
         $method = $this->getDestinationApiHttpMethod();
         $response = $this->httpClient->$method($this->getDestinationApiUrl(), [
-            'form_params' => $data,
+            'headers' => [
+                'Content-Type' => 'application/json'
+            ],
+            'json' => $data,
         ]);
 
         // Check the response status code and handle any errors if necessary
@@ -108,7 +111,7 @@ abstract class QueueConsumer
             throw new \Exception("Destination API returned error: " . $response->getBody()->getContents());
         }
 
-        // print_r(json_decode($response->getBody()->getContents()));
+        print_r(json_decode($response->getBody()->getContents()));
     }
 
     /**
