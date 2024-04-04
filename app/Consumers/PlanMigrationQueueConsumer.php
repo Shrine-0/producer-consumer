@@ -35,7 +35,6 @@ class PlanMigrationQueueConsumer extends QueueConsumer
         $modifiedData['sync_date'] = Carbon::now();
         $modifiedData['sync_medium'] = 'Consumer';
 
-        // dd($modifiedData);
         return $modifiedData;
     }
 
