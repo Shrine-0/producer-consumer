@@ -68,7 +68,7 @@ class ConsumerCommand extends Command
             while ($retryCount < 5) {
                 try {
                     $consumer = $this->getConsumer($queue, $username);
-                    $consumer->processQueue($usernam);
+                    $consumer->processQueue($username);
                     $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
                     break;
                 } catch (\Throwable $e) {
