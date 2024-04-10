@@ -48,12 +48,15 @@ class RetryConsumerCommand extends Command
                 $username = $value['message']['username'];
                 $queue = $value['queue'];
                 $newArray = explode('-', $key);
+
                 $consumer  = $this->getConsumer($queue, $username);
                 $consumer->processQueue($username);
+
                 $this->redisHelper->deleteKey($username, $module, $newArray[4]);
             } catch (\Throwable $th) {
                 $this->error('Error processing the message', $th->getMessage());
                 // Log::error('Error processing the message', $th->getMessage());
+                $this->redisHelper->deleteKey($username, $module, $newArray[4]);
             }
         }
     }
