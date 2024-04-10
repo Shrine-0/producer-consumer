@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Consumers\QueueConsumer;
 use App\Helpers\RedisHelper;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class RetryConsumerCommand extends Command
 {

@@ -6,9 +6,7 @@ use Illuminate\Console\Command;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use App\Consumers\QueueConsumer;
 use App\Helpers\RedisHelper;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use PhpAmqpLib\Message\AMQPMessage;
 
 class ConsumerCommand extends Command
 {
