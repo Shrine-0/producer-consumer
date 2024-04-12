@@ -81,7 +81,7 @@ abstract class QueueConsumer
         $apiconfigs = $this->sourceApiConfig($username);
 
         $data = [];
-        foreach ($apiconfigs as $key => $value) {
+        foreach ($apiconfigs as $key => $value) { //asynchronous call instead of loop
             $response[$key] = $this->httpClient->get(
                 $value['api'],
                 $value['headers']

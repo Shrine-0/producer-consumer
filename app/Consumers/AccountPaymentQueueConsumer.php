@@ -30,7 +30,7 @@ class AccountPaymentQueueConsumer extends QueueConsumer
         $modifiedData['account_status'] = ($data[0]['disable'] == 'N') ? 'enable' : 'disable';
         $modifiedData['expiry_date'] = $data[0]['expiry_date'];
         // $modifiedData['pay_plan'] = $data[0]['pay_plan'];
-        // $modifiedData['plan_category_id'] = $data[0]['plan_category_id'];
+        $modifiedData['plan_category_id'] = $data[0]['plan_category_id'];
 
         return $modifiedData;
     }
