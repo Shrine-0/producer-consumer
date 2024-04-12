@@ -129,7 +129,7 @@ class ConsumerCommand extends Command
         if (class_exists($className)) {
             return new $className($username);
         } else {
-            throw new \InvalidArgumentException("No consumer found for queue: $queueName"); //
+            throw new \InvalidArgumentException("No consumer found for queue: $queueName");
         }
     }
 
