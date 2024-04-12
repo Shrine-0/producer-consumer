@@ -2,6 +2,9 @@
 
 namespace App\Consumers;
 
+use App\Helpers\Encrypter;
+use Carbon\Carbon;
+
 class CustomerInfoModificationQueueConsumer extends QueueConsumer
 {
     protected function getEventName(): string
@@ -9,25 +12,66 @@ class CustomerInfoModificationQueueConsumer extends QueueConsumer
         return "CustomerInfoModification";
     }
 
-    protected function transformPayload($data)
+    protected function sourceApiConfig($username): array
     {
-        $data = $data['response'][0];
-        $data['client_name'] = $data['username'] . rand();
-        return $data;
+        return [
+            [
+                "api" => "https://services.wlink.com.np/customers/customers/$username",
+                "headers" => [
+                    "headers" => [
+                        "Authorization" => "Basic aW50X21vYmlsZWFwcDpWV0paZXBXbWNxM2pha0hr"
+                    ]
+                ],
+                "method" => "get"
+            ],
+            [
+                "api" => "https://services.wlink.com.np/customers/customerinfos/$username",
+                "headers" => [
+                    "headers" => [
+                        "Authorization" => "Basic aW50X21vYmlsZWFwcDpWV0paZXBXbWNxM2pha0hr"
+                    ]
+                ],
+                "method" => "get"
+            ]
+        ];
     }
 
-    protected function getHttpMethod(): string
+    protected function transformPayload($data): array
     {
-        return "PATCH";
+        $modifiedData = [];
+
+        $modifiedData['client_name'] = $data[1]['name'];
+        $modifiedData['email_primary'] = $data[1]['primary_email_address'];
+        $modifiedData['email_secondary'] = $data[1]['secondary_email_address'];
+        $modifiedData['primary_number'] = Encrypter::handle($data[1]['primary_mobile_number']);
+        $modifiedData['secondary_number'] = Encrypter::handle($data[1]['secondary_mobile_number']);
+        $modifiedData['supportzone_id'] = $data[0]['supportzone_id'];
+        $modifiedData['supportzone'] = $data[0]['support_zone'];
+        $modifiedData['sync_date'] = Carbon::now();
+        $modifiedData['sync_medium'] = 'Consumer';
+
+        return $modifiedData;
     }
 
-    protected function sourceApiQueryParams(): string
+    protected function getDestinationApiHttpMethod(): string
     {
-        return "";
+        return "patch";
     }
 
-    protected function destinationApiQueryParams(): string
+    protected function destinationApiQueryParams($username): string
     {
-        return "?event=customerInfo";
+        return "$username?event=customerInfo";
+    }
+
+    private function getOwnership($payPlan)
+    {
+        switch ($payPlan) {
+            case '8000':
+                return 'WIFINEPAL';
+            case '8001':
+                return 'EASTLINK';
+            default:
+                return 'WORLDLINK';
+        }
     }
 }

@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  # Supervisor
+  supervisord:
+    image: gitlab.wlink.com.np:4567/customer-mobileapp/consumer-service:supervisord-develop
+    restart: always
+    container_name: cust_mobile-app-consumer-supervisor
+    networks:
+      - cust_mobile-app-consumer-network
+    environment:
+      - TZ="Asia/Kathmandu"
+    logging:
+      driver: syslog
+      options:
+        syslog-address: ${LOGGER:-}
+        syslog-facility: daemon
+        tag: cust_mobile-app-consumer-supervisor
+
+networks:
+  cust_mobile-app-consumer-network:
+    external: true

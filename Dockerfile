@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev
 
 # Install PHP extensions
-RUN pecl install amqp && docker-php-ext-enable amqp
+RUN pecl install amqp && docker-php-ext-enable amqp 
+RUN pecl install redis && docker-php-ext-enable redis
 
 # Set timezone
 ENV TZ="Asia/Kathmandu"

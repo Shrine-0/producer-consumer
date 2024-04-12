@@ -9,25 +9,39 @@ class AccountPaymentQueueConsumer extends QueueConsumer
         return "AccountPayment";
     }
 
-    protected function transformPayload($data)
+    protected function sourceApiConfig($username): array
     {
-        $data = $data['response'][0];
-        $data['client_name'] = $data['username'] . rand();
-        return $data;
+        return [
+            [
+                "api" => "https://services.wlink.com.np/customers/customers/$username",
+                "headers" => [
+                    "headers" => [
+                        "Authorization" => "Basic aW50X21vYmlsZWFwcDpWV0paZXBXbWNxM2pha0hr"
+                    ]
+                ],
+                "method" => "get"
+            ]
+        ];
     }
 
-    protected function getHttpMethod(): string
+    protected function transformPayload($data): array
     {
-        return "PATCH";
+        $modifiedData = [];
+        $modifiedData['account_status'] = ($data[0]['disable'] == 'N') ? 'enable' : 'disable';
+        $modifiedData['expiry_date'] = $data[0]['expiry_date'];
+        // $modifiedData['pay_plan'] = $data[0]['pay_plan'];
+        $modifiedData['plan_category_id'] = $data[0]['plan_category_id'];
+
+        return $modifiedData;
     }
 
-    protected function sourceApiQueryParams(): string
+    protected function getDestinationApiHttpMethod(): string
     {
-        return "";
+        return "patch";
     }
 
-    protected function destinationApiQueryParams(): string
+    protected function destinationApiQueryParams($username): string
     {
-        return "?event=customerInfo";
+        return "$username?event=customerInfo";
     }
 }
