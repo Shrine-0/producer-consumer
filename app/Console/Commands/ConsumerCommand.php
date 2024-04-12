@@ -19,11 +19,11 @@ class ConsumerCommand extends Command
         $this->redisHelper = $redisHelper;
     }
     /**
-     * The name and signature of the console command.
+     * The name and signature of the console command.   
      *
      * @var string
      */
-    protected $signature = 'rabbitmq:consumer {queue}';
+    protected $signature = 'rabbitmq:consumer {exchange}';
 
     /**
      * The console command description.
@@ -39,7 +39,15 @@ class ConsumerCommand extends Command
      */
     public function handle()
     {
-        $queue = $this->argument('queue');
+        $queueExchangeArray = [
+            'customersvc.prod.create.customer' => 'customersvc.prod.insert.mobileApp',
+            'customersvc.prod.update.customerinfo' => 'customersvc.prod.update.customerinfo.mobileApp',
+            'customersvc.prod.planshift' => 'customersvc.prod.planshift.mobileApp',
+            'customersvc.prod.expirydate_update.customer' => 'customersvc.prod.expirydate_update.mobileApp'
+        ];
+
+        $exchange = $this->argument('exchange');
+        $queue = $queueExchangeArray[$exchange];
 
         $connection = new AMQPStreamConnection(
             env('RABBITMQ_HOST'),
@@ -48,24 +56,29 @@ class ConsumerCommand extends Command
             env('RABBITMQ_PASSWORD'),
             env('RABBITMQ_VHOST')
         );
-
         $channel = $connection->channel();
 
-        $this->declareExchangeQueue($channel, $queue, 'fanout');
+        $this->declareExchangeQueue($channel, $exchange, $queue, 'fanout');
 
         $this->info(" [*] Waiting for messages in $queue. To exit press CTRL+C");
         $callback = function ($msg) use ($queue) {
             $maxRetry = 5;
             $retryCount = 0;
 
+
             $this->info(" [x] Received in queue : $msg->body");
 
-            $message = json_decode($msg->body, true);
-            $username = $message['username'];
+            $username = $this->extractUsername($msg->body);
+            $consumerCommandName = [
+                'customersvc.prod.insert.mobileApp' => 'OnUserCreate',
+                'customersvc.prod.update.customerinfo.mobileApp' => 'CustomerInfoModification',
+                'customersvc.prod.planshift.mobileApp' => 'PlanMigration',
+                'customersvc.prod.expirydate_update.mobileApp' => 'AccountPayment'
+            ];
 
             while ($retryCount < 5) {
                 try {
-                    $consumer = $this->getConsumer($queue, $username);
+                    $consumer = $this->getConsumer($consumerCommandName[$queue], $username);
                     $consumer->processQueue($username);
                     $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
                     break;
@@ -80,7 +93,7 @@ class ConsumerCommand extends Command
             if ($retryCount == $maxRetry) {
                 $this->info('redis');
                 $result = [
-                    'message' => $message,
+                    'message' => ['user_name' => $username],
                     'queue' => $queue
                 ];
                 $timestamp = time();
@@ -109,11 +122,11 @@ class ConsumerCommand extends Command
         return Command::SUCCESS;
     }
 
-    protected function declareExchangeQueue($channel, $queue, $exchangeType, $routingKey = '')
+    protected function declareExchangeQueue($channel, $exchange, $queue, $exchangeType, $routingKey = '')
     {
-        $channel->exchange_declare($queue, $exchangeType, false, true, false);
+        $channel->exchange_declare($exchange, $exchangeType, false, true, false);
         $channel->queue_declare($queue, false, true, false, false);
-        $channel->queue_bind($queue, $queue, $routingKey);
+        $channel->queue_bind($queue, $exchange, $routingKey);
     }
 
     protected function getConsumer($queueName, $username): QueueConsumer
@@ -124,5 +137,21 @@ class ConsumerCommand extends Command
         } else {
             throw new \InvalidArgumentException("No consumer found for queue: $queueName"); //
         }
+    }
+
+    private function extractUsername($message)
+    {
+        $message = json_decode($message, true);
+        if (isset($message['data']['customer']['user_name']))
+            return $message['data']['customer']['user_name'];
+
+        if (isset($message['data']['user_name']))
+            return $message['data']['user_name'];
+
+        if (isset($message['machine_name']))
+            return $message['machine_name'];
+
+        if (isset($message['user_name']))
+            return  $message['user_name'];
     }
 }
