@@ -39,12 +39,7 @@ class ConsumerCommand extends Command
      */
     public function handle()
     {
-        $queueExchangeArray = [
-            'customersvc.prod.create.customer' => 'customersvc.prod.insert.mobileApp',
-            'customersvc.prod.update.customerinfo' => 'customersvc.prod.update.customerinfo.mobileApp',
-            'customersvc.prod.planshift' => 'customersvc.prod.planshift.mobileApp',
-            'customersvc.prod.expirydate_update.customer' => 'customersvc.prod.expirydate_update.mobileApp'
-        ];
+        $queueExchangeArray = config('rabbitmq.queueExchange');
 
         $exchange = $this->argument('exchange');
         $queue = $queueExchangeArray[$exchange];
@@ -65,16 +60,10 @@ class ConsumerCommand extends Command
             $maxRetry = 5;
             $retryCount = 0;
 
-
             $this->info(" [x] Received in queue : $msg->body");
 
             $username = $this->extractUsername($msg->body);
-            $consumerCommandName = [
-                'customersvc.prod.insert.mobileApp' => 'OnUserCreate',
-                'customersvc.prod.update.customerinfo.mobileApp' => 'CustomerInfoModification',
-                'customersvc.prod.planshift.mobileApp' => 'PlanMigration',
-                'customersvc.prod.expirydate_update.mobileApp' => 'AccountPayment'
-            ];
+            $consumerCommandName = config('rabbitmq.consumerCommandName');
 
             while ($retryCount < 5) {
                 try {
@@ -86,6 +75,7 @@ class ConsumerCommand extends Command
                     $this->error("Error processing message: " . $e->getMessage());
                     Log::error("Error processing message: " . $e->getMessage());
                     $this->error("retry count : $retryCount ");
+
                     $retryCount++;
                 }
             }
@@ -99,6 +89,10 @@ class ConsumerCommand extends Command
                 $timestamp = time();
                 $this->redisHelper->cacheResult($username, $result, 5, $timestamp);
                 $this->info('redis-cache-stored');
+
+                //multiple is set to false so the broker will nack the message specified by the delivery tag 
+                //requeue is set to true so when a message is nacked the broker will requeue it again if false the broker will remove the nacked messages
+                $msg->delivery_info['channel']->basic_nack($msg->delivery_info['delivery_tag'], false, true);
             }
         };
 
