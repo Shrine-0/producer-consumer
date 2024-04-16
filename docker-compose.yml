@@ -49,6 +49,8 @@ services:
         volumes:
             - ./:/var/www/html
             - ./supervisord/supervisord.conf:/etc/supervisord.conf
+        dns:
+            - "202.79.32.4"
         networks:
             - cust_mobile-app-consumer-network
 
