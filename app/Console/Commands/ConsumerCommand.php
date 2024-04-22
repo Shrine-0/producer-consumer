@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use App\Consumers\QueueConsumer;
 use App\Helpers\RedisHelper;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class ConsumerCommand extends Command
@@ -83,11 +84,12 @@ class ConsumerCommand extends Command
             if ($retryCount == $maxRetry) {
                 $this->info('redis');
                 $result = [
-                    'message' => ['user_name' => $username],
-                    'queue' => $queue
+                    'message' => ['username' => $username],
+                    'queue' => $consumerCommandName[$queue]
                 ];
-                $timestamp = time();
-                $this->redisHelper->cacheResult($username, $result, 5, $timestamp);
+                $now = Carbon::now();
+;                $timestamp = $now->format('Y:m:d::H:i:s');
+                $this->redisHelper->cacheResult($username, $result, 5, $timestamp); //cache tag concept to be added instead of timestamp
                 $this->info('redis-cache-stored');
 
                 //multiple is set to false so the broker will nack the message specified by the delivery tag 
@@ -133,7 +135,7 @@ class ConsumerCommand extends Command
         }
     }
 
-    private function extractUsername($message)
+    private function extractUsername($message) // add a config file setting
     {
         $message = json_decode($message, true);
         if (isset($message['data']['customer']['user_name']))
