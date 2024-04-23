@@ -96,7 +96,7 @@ abstract class QueueConsumer
      */
     protected function performHttpRequest($data)
     {
-        echo ($this->getDestinationApiUrl());
+        // echo ($this->getDestinationApiUrl());
 
         $method = $this->getDestinationApiHttpMethod();
         $response = $this->httpClient->$method($this->getDestinationApiUrl(), [
@@ -111,7 +111,7 @@ abstract class QueueConsumer
             throw new \Exception("Destination API returned error: " . $response->getBody()->getContents());
         }
 
-        print_r(json_decode($response->getBody()->getContents()));
+        // print_r(json_decode($response->getBody()->getContents()));
     }
 
     /**
