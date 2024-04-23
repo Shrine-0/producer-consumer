@@ -1,11 +1,9 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Schedule as FacadesSchedule;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote')->hourly();
+Schedule::command('retry:consume')->everyMinute()->withoutOverlapping();
 
-FacadesSchedule::command('retry:consume')->everyMinute();
+Schedule::command('command:master')->dailyAt('16:02')->withoutOverlapping();
+// Schedule::command('command:master')->everyThirtyMinutes()->withoutOverlapping();
+// Schedule::command('command:sync-support-zone-customers', ['137', 'DHIKURE'])->everySecond()->withoutOverlapping();
