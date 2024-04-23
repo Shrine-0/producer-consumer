@@ -53,4 +53,14 @@ class RedisHelper
     {
         return $this->redisPrefix . "-" . $username . "-" . $module . '-' . $timestamp;
     }
+
+    public function setKey($key, $value)
+    {
+        return $this->redisHelper->set($key, $value);
+    }
+
+    public function getKey($key)
+    {
+        return $this->redisHelper->get($key);
+    }
 }
