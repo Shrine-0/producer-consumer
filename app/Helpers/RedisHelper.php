@@ -56,11 +56,11 @@ class RedisHelper
 
     public function setKey($key, $value)
     {
-        return $this->redisHelper->set($key, $value);
+        return $this->redisConnection->set($key, $value);
     }
 
     public function getKey($key)
     {
-        return $this->redisHelper->get($key);
+        return $this->redisConnection->get($key);
     }
 }
