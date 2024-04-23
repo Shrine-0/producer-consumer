@@ -6,6 +6,8 @@ use App\Consumers\QueueConsumer;
 use App\Helpers\RedisHelper;
 use Illuminate\Console\Command;
 
+use function Laravel\Prompts\error;
+
 class RetryConsumerCommand extends Command
 {
     /**
@@ -40,27 +42,32 @@ class RetryConsumerCommand extends Command
      */
     public function handle()
     {
-        $messages = $this->redisHelper->getRetryMessages();
+        $keys = $this->redisHelper->getKeys();
         $module = 'messagingError';
-        foreach ($messages as $key => $value) {
+        foreach ($keys as $key => $value) {
             try {
-                $username = $value['message']['username'];
-                $queue = $value['queue'];
-                $newArray = explode('-', $key);
+                $message = $this->redisHelper->getMessage($value);
+                $message = json_decode($message, true);
 
-                $consumer  = $this->getConsumer($queue, $username);
-                $consumer->processQueue($username);
+                $username = $message['message']['username'];
+                $queue = $message['queue'];
 
-                $this->redisHelper->deleteKey($username, $module, $newArray[4]);
+                if (isset($username) && isset($queue)) {
+                    $newArray = explode('-', $value);
+                    $consumer  = $this->getConsumer($queue, $username);
+                    $consumer->processQueue($username);
+                    $this->redisHelper->deleteKey($username, $module, $newArray[4]);
+                } else {
+                    $this->error('Message is empty');
+                }
             } catch (\Throwable $th) {
                 $this->error('Error processing the message', $th->getMessage());
                 // Log::error('Error processing the message', $th->getMessage());
-                $this->redisHelper->deleteKey($username, $module, $newArray[4]);
             }
         }
     }
 
-    protected function getConsumer($queueName, $username): QueueConsumer
+    protected function getConsumer($queueName, $username): QueueConsumer //make this method reusable later or make it global
     {
         $className = 'App\\Consumers\\' . $queueName . 'QueueConsumer';
         if (class_exists($className)) {

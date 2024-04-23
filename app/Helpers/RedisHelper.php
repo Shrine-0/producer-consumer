@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\Redis as RRR;
 
 class RedisHelper
 {
-    private $redisHelper;
+    private $redisConnection;
     private $redisPrefix;
 
     public function __construct()
     {
-        $this->redisHelper = RRR::connection();
+        $this->redisConnection = RRR::connection();
         $this->redisPrefix = env('REDIS_PREFIX');
     }
 
@@ -22,36 +22,36 @@ class RedisHelper
     {
         $module = 'messagingError';
         $redisKey = $this->buildRedisKey($username, $module, $timestamp);
-        $this->redisHelper->setex($redisKey, $min * 60, json_encode($result));
+        $this->redisConnection->setex($redisKey, $min * 60, json_encode($result));
     }
 
     public function getCachedResult($username, $module)
     {
         $redisKey = $this->buildRedisKey($username, $module);
-        return json_decode($this->redisHelper->get($redisKey));
+        return json_decode($this->redisConnection->get($redisKey));
     }
 
-    public function getRetryMessages()
+    public function getKeys()
     {
-        $keys = $this->redisHelper->keys($this->redisPrefix . '-*');
-        $messages = [];
-        foreach ($keys as $key => $value) {
-            $value = substr($value, 10);
-            $message = $this->redisHelper->get($value);
-            $messages[$value] = json_decode($message, true);
-        }
-        return $messages;
+        $keys = $this->redisConnection->keys($this->redisPrefix . '-messagingError-*');
+        return $keys;
+    }
+
+    public function getMessage($key)
+    {
+        $message = $this->redisConnection->get($key);
+        return $message;
     }
 
     public function deleteKey($username, $module, $timestamp = null)
     {
         $redisKey = $this->buildRedisKey($username, $module, $timestamp);
-        $this->redisHelper->del($redisKey);
+        $this->redisConnection->del($redisKey);
     }
 
     public function buildRedisKey($username, $module = 'messagingError', $timestamp = null)
     {
-        return $this->redisPrefix . "-" . $username . "-" . $module . '-' . $timestamp;
+        return $this->redisPrefix . "-" . $module . "-" . $username . '-' . $timestamp;
     }
 
     public function setKey($key, $value)
