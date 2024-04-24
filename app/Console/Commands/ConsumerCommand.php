@@ -143,6 +143,9 @@ class ConsumerCommand extends Command
 
         if (isset($message['data']['user_name']))
             return $message['data']['user_name'];
+        
+        if (isset($message['data']['machine_name']))
+            return $message['data']['machine_name'];
 
         if (isset($message['machine_name']))
             return $message['machine_name'];
