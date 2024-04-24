@@ -55,7 +55,6 @@ class ConsumerCommand extends Command
         $channel = $connection->channel();
 
         $this->declareExchangeQueue($channel, $exchange, $queue, 'fanout');
-
         $this->info(" [*] Waiting for messages in $queue. To exit press CTRL+C");
         $callback = function ($msg) use ($queue) {
             $maxRetry = 5;
@@ -87,8 +86,8 @@ class ConsumerCommand extends Command
                     'message' => ['username' => $username],
                     'queue' => $consumerCommandName[$queue]
                 ];
-                $now = Carbon::now();
-;                $timestamp = $now->format('Y:m:d::H:i:s');
+                $now = Carbon::now();;
+                $timestamp = $now->format('Y:m:d::H:i:s');
                 $this->redisHelper->cacheResult($username, $result, 5, $timestamp); //cache tag concept to be added instead of timestamp
                 $this->info('redis-cache-stored');
 
