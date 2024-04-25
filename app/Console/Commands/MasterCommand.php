@@ -25,7 +25,6 @@ class MasterCommand extends Command
             $set = $redis->setKey("-supportzone-$supportZone", $count);
             $this->logger('FINISHED', "Redis cache store total customer count $count with response $set", $supportZone);
         }
-        return;
 
         $listOfBranches = $eBillService->getListOfAllBranches();
 
