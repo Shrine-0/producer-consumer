@@ -137,10 +137,12 @@ class SyncSupportzoneCustomersCommand extends Command
         $numChunks = ceil($customerCount / $chunkSize);
 
         for ($i = 0; $i < $numChunks; $i++) {
-            $offset = $i * $chunkSize;
-            $limit = $chunkSize;
+            $offset = ($i * $chunkSize) + 1;
+            $limit = ($i + 1) * $chunkSize;
 
-            if ($i === $numChunks - 1) $limit = $customerCount % $chunkSize;
+            // $offset = $i * $chunkSize;
+            // $limit = $chunkSize;
+            // if ($i === $numChunks - 1) $limit = $customerCount % $chunkSize;
 
             $customers = $this->fetchEBillCustomer($supportzone_id, $offset, $limit)->toArray();
 
