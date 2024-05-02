@@ -91,7 +91,7 @@ class SyncSupportzoneCustomersCommand extends Command
         $createSql = "
             CREATE TABLE IF NOT EXISTS $tableName
             (
-                username character varying(255) PRIMARY KEY,
+                username character varying(255),
                 client_name character varying(255),
                 email_primary character varying(255),
                 email_secondary character varying(255),
@@ -137,12 +137,11 @@ class SyncSupportzoneCustomersCommand extends Command
         $numChunks = ceil($customerCount / $chunkSize);
 
         for ($i = 0; $i < $numChunks; $i++) {
-            $offset = ($i * $chunkSize) + 1;
-            $limit = ($i + 1) * $chunkSize;
 
-            // $offset = $i * $chunkSize;
-            // $limit = $chunkSize;
-            // if ($i === $numChunks - 1) $limit = $customerCount % $chunkSize;
+            $offset = $i * $chunkSize;
+            $limit = $chunkSize;
+
+            if ($i === $numChunks - 1) $limit = $customerCount % $chunkSize;
 
             $customers = $this->fetchEBillCustomer($supportzone_id, $offset, $limit)->toArray();
 
