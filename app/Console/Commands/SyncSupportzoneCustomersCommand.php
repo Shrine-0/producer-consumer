@@ -91,7 +91,7 @@ class SyncSupportzoneCustomersCommand extends Command
         $createSql = "
             CREATE TABLE IF NOT EXISTS $tableName
             (
-                username character varying(255),
+                username character varying(255) PRIMARY KEY,
                 client_name character varying(255),
                 email_primary character varying(255),
                 email_secondary character varying(255),
