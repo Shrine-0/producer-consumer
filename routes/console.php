@@ -3,5 +3,5 @@
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('retry:consume')->everyMinute()->withoutOverlapping()->sendOutputTo('/proc/1/fd/1');
-Schedule::command('command:master')->dailyAt('12:10')->withoutOverlapping()->sendOutputTo('/proc/1/fd/1');
+Schedule::command('command:master')->dailyAt('12:20')->withoutOverlapping()->sendOutputTo('/proc/1/fd/1');
 // Schedule::command('command:master')->dailyAt('01:00')->withoutOverlapping()->sendOutputTo('/proc/1/fd/1');
