@@ -1,16 +1,14 @@
 stages:
-  - pre-check
   - prepare
-  - build
+  - build-stage
+  - build-prod
   - publish
 
 variables:
-  # APP_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   SUPERVISOR_IMAGE: $CI_REGISTRY_IMAGE:supervisord-$CI_COMMIT_REF_SLUG
-  APP_TIMEZONE: ${APP_TIMEZONE}
-
-cache:
-  key: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+  
+# cache:
+#   key: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
 
 composer_install:
   stage: prepare
@@ -27,43 +25,35 @@ composer_install:
     - php-composer
   only:
     - develop
-    - uat
     - release
 
-build_staging:
-  stage: build
+build_stage:
+  stage: build-stage
   before_script:
     - chmod +x setup_dev_env.sh
     - ./setup_dev_env.sh
-    # - docker build -t $APP_IMAGE .
-    - docker build -t $SUPERVISOR_IMAGE --file supervisord.Dockerfile .
+    - docker build -t ${SUPERVISOR_IMAGE} --file supervisord.Dockerfile .
   script:
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN
-    # - docker push $APP_IMAGE
-    - docker push $SUPERVISOR_IMAGE
+    - docker login ${CI_REGISTRY} -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN}
+    - docker push ${SUPERVISOR_IMAGE}
   after_script:
-    # - "docker image rm -f $APP_IMAGE || true"
-    - "docker image rm -f $SUPERVISOR_IMAGE || true"
-
+    - docker image rm -f ${SUPERVISOR_IMAGE} || true
   tags:
     - php-shell
   only:
     - develop
 
 build_prod:
-  stage: build
+  stage: build-prod
   before_script:
     - chmod +x setup_prod_env.sh
     - ./setup_prod_env.sh
-    # - docker build -t $APP_IMAGE .
-    - docker build -t $SUPERVISOR_IMAGE --file supervisord.Dockerfile .
+    - docker build -t ${SUPERVISOR_IMAGE} --file supervisord.Dockerfile .
   script:
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN
-    # - docker push $APP_IMAGE
-    - docker push $SUPERVISOR_IMAGE
+    - docker login ${CI_REGISTRY} -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN}
+    - docker push ${SUPERVISOR_IMAGE}
   after_script:
-    # - docker image rm -f $APP_IMAGE || true
-    - docker image rm -f $SUPERVISOR_IMAGE || true
+    - docker image rm -f ${SUPERVISOR_IMAGE} || true
   tags:
     - php-shell
   only:
@@ -71,21 +61,26 @@ build_prod:
 
 publish_staging:
   stage: publish
+  dependencies:
+    - build_stage
   script:
-    - curl -f -X POST "$STAGE_SUPERVISOR_WEBHOOK"
+    - curl -f -X POST ${STAGE_SUPERVISOR_WEBHOOK}
   tags:
     - php-shell
   only:
     - develop
+  environment:
+    name: staging
 
 publish_prod:
   stage: publish
+  dependencies:
+    - build_prod
   script:
-    - curl -f -X POST "$PROD_SUPERVISOR_WEBHOOK"
+    - curl -f -X POST ${PROD_SUPERVISOR_WEBHOOK}
   tags:
     - php-shell
   only:
-    refs:
-      - release
+    - release
   environment:
     name: production
