@@ -5,7 +5,7 @@ stages:
   - publish
 
 variables:
-  APP_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  # APP_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   SUPERVISOR_IMAGE: $CI_REGISTRY_IMAGE:supervisord-$CI_COMMIT_REF_SLUG
   APP_TIMEZONE: ${APP_TIMEZONE}
 
@@ -35,14 +35,14 @@ build_staging:
   before_script:
     - chmod +x setup_dev_env.sh
     - ./setup_dev_env.sh
-    - docker build -t $APP_IMAGE .
+    # - docker build -t $APP_IMAGE .
     - docker build -t $SUPERVISOR_IMAGE --file supervisord.Dockerfile .
   script:
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN
-    - docker push $APP_IMAGE
+    # - docker push $APP_IMAGE
     - docker push $SUPERVISOR_IMAGE
   after_script:
-    - "docker image rm -f $APP_IMAGE || true"
+    # - "docker image rm -f $APP_IMAGE || true"
     - "docker image rm -f $SUPERVISOR_IMAGE || true"
 
   tags:
@@ -55,14 +55,14 @@ build_prod:
   before_script:
     - chmod +x setup_prod_env.sh
     - ./setup_prod_env.sh
-    - docker build -t $APP_IMAGE .
+    # - docker build -t $APP_IMAGE .
     - docker build -t $SUPERVISOR_IMAGE --file supervisord.Dockerfile .
   script:
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN
-    - docker push $APP_IMAGE
+    # - docker push $APP_IMAGE
     - docker push $SUPERVISOR_IMAGE
   after_script:
-    - docker image rm -f $APP_IMAGE || true
+    # - docker image rm -f $APP_IMAGE || true
     - docker image rm -f $SUPERVISOR_IMAGE || true
   tags:
     - php-shell
