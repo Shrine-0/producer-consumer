@@ -68,6 +68,10 @@ class ConsumerCommand extends Command
             $this->logger->notice(" [x] Received in queue : $msg->body");
 
             $username = $this->extractUsername($msg->body);
+            if ($username === null) {
+                $this->logger->error("Username not received", ["queue" => $queue]);
+                return;
+            }
             $consumerCommandName = config('rabbitmq.consumerCommandName');
 
             $this->logger->logs('start', "$consumerCommandName[$queue]Consumer", $queue, $username);
