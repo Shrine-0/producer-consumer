@@ -83,6 +83,7 @@ class ConsumerCommand extends Command
                     $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
                     break;
                 } catch (\Throwable $e) {
+                    $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
                     $this->logger->errorLogs('error', 'retryOnError', $queue, $username, "Error with retryCount : " . $retryCount + 1);
                     $retryCount++;
                 }
