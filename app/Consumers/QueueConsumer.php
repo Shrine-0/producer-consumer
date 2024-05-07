@@ -2,6 +2,7 @@
 
 namespace App\Consumers;
 
+use App\Helpers\Logger;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
@@ -10,11 +11,12 @@ abstract class QueueConsumer
 {
     protected $httpClient;
     protected $username;
-
-    public function __construct($username)
+    public $logger;
+    public function __construct($username, Logger $logger)
     {
         $this->httpClient = new Client();
         $this->username = $username;
+        $this->logger = $logger;
     }
 
     /**
@@ -68,8 +70,9 @@ abstract class QueueConsumer
             $transformedData = $this->transformPayload($sourceData);
             $this->performHttpRequest($transformedData);
         } catch (\Exception $e) {
-            Log::error("Error processing queue '{$this->getEventName()}': " . $e->getMessage());
-            $this->handleError($e);
+            $messages[]=explode("\n", $e->getMessage());
+
+            $this->logger->errorLogs('error', 'ProcessQueue', $this->queueNameSpecifier($this->getEventName()), $this->username,json_encode($messages[0]));
         }
     }
 
@@ -78,16 +81,19 @@ abstract class QueueConsumer
      */
     protected function getDataFromSourceApi($username)
     {
-        $apiconfigs = $this->sourceApiConfig($username);
+        $this->logger->logs('start', 'GetDataFromSourceApi', $this->queueNameSpecifier($this->getEventName()), $this->username);
+        $apiConfigs = $this->sourceApiConfig($username);
 
         $data = [];
-        foreach ($apiconfigs as $key => $value) { //asynchronous call instead of loop
+        foreach ($apiConfigs as $key => $value) { //asynchronous call instead of loop
             $response[$key] = $this->httpClient->get(
                 $value['api'],
                 $value['headers']
             );
             $data[$key] = json_decode($response[$key]->getBody(), true);
         }
+        $this->logger->logs('finish', 'GetDataFromSourceApi', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($data));
+
         return $data;
     }
 
@@ -97,7 +103,7 @@ abstract class QueueConsumer
     protected function performHttpRequest($data)
     {
         // echo ($this->getDestinationApiUrl());
-
+        $this->logger->logs('start', 'PerformHttpRequest', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($data));
         $method = $this->getDestinationApiHttpMethod();
         $response = $this->httpClient->$method($this->getDestinationApiUrl(), [
             'headers' => [
@@ -105,21 +111,18 @@ abstract class QueueConsumer
             ],
             'json' => $data,
         ]);
-
+        $this->logger->logs('finish', 'PerformHttpRequest', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($response->getBody()->getContents()));
         // Check the response status code and handle any errors if necessary
         if ($response->getStatusCode() !== 200) {
-            throw new \Exception("Destination API returned error: " . $response->getBody()->getContents());
+            $this->logger->errorLogs('error', 'PerformHttpRequest', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($response->getBody()->getContents()));
         }
 
         // print_r(json_decode($response->getBody()->getContents()));
     }
 
-    /**
-     * Handle error occurred during processing
-     */
-    protected function handleError(\Exception $e)
+    public function queueNameSpecifier(string $eventName)
     {
-        // Perform actions such as retrying, logging, or sending notifications
-        Log::error("Error handling failed: " . $e->getMessage());
+        $array  = array_flip(config('rabbitmq.consumerCommandName'));
+        return $array[$eventName];
     }
 }

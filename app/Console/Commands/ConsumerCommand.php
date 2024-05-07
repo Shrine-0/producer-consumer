@@ -5,19 +5,22 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use App\Consumers\QueueConsumer;
+use App\Helpers\Logger;
 use App\Helpers\RedisHelper;
+use App\Services\SlackService;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class ConsumerCommand extends Command
 {
     public $redisHelper;
+    public $logger;
 
-    public function __construct(RedisHelper $redisHelper)
+    public function __construct(RedisHelper $redisHelper, Logger $logger)
     {
         parent::__construct();
 
         $this->redisHelper = $redisHelper;
+        $this->logger = $logger;
     }
     /**
      * The name and signature of the console command.   
@@ -56,15 +59,18 @@ class ConsumerCommand extends Command
 
         $this->declareExchangeQueue($channel, $exchange, $queue, 'fanout');
 
-        $this->info(" [*] Waiting for messages in $queue. To exit press CTRL+C");
+        $this->logger->notice(" [*] Waiting for messages in $queue. To exit press CTRL+C");
+
         $callback = function ($msg) use ($queue) {
             $maxRetry = 5;
             $retryCount = 0;
 
-            $this->info(" [x] Received in queue : $msg->body");
+            $this->logger->notice(" [x] Received in queue : $msg->body");
 
             $username = $this->extractUsername($msg->body);
             $consumerCommandName = config('rabbitmq.consumerCommandName');
+
+            $this->logger->logs('start', "$consumerCommandName[$queue]Consumer", $queue, $username);
 
             while ($retryCount < 5) {
                 try {
@@ -73,29 +79,29 @@ class ConsumerCommand extends Command
                     $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
                     break;
                 } catch (\Throwable $e) {
-                    $this->error("Error processing message: " . $e->getMessage());
-                    Log::error("Error processing message: " . $e->getMessage());
-                    $this->error("retry count : $retryCount ");
-
+                    $this->logger->errorLogs('error', 'retryOnError', $queue, $username, "Error with retryCount : " . $retryCount + 1);
                     $retryCount++;
                 }
             }
 
             if ($retryCount == $maxRetry) {
-                $this->info('redis');
+                $this->logger->logs('start', 'redisStoreOnMaxRetry', $queue, $username);
                 $result = [
                     'message' => ['username' => $username],
                     'queue' => $consumerCommandName[$queue]
                 ];
                 $now = Carbon::now();
-;                $timestamp = $now->format('Y:m:d::H:i:s');
+                $timestamp = $now->format('Y:m:d::H:i:s');
                 $this->redisHelper->cacheResult($username, $result, 5, $timestamp); //cache tag concept to be added instead of timestamp
-                $this->info('redis-cache-stored');
+                $this->logger->logs('finish', 'redisStoreOnMaxRetry', $queue, $username);
+
 
                 //multiple is set to false so the broker will nack the message specified by the delivery tag 
                 //requeue is set to true so when a message is nacked the broker will requeue it again if false the broker will remove the nacked messages
-                $msg->delivery_info['channel']->basic_nack($msg->delivery_info['delivery_tag'], false, true);
+                // $msg->delivery_info['channel']->basic_nack($msg->delivery_info['delivery_tag'], false, true);
             }
+
+            $this->logger->logs('finish', "$consumerCommandName[$queue]Consumer", $queue, $username);
         };
 
         $channel->basic_consume(
@@ -120,22 +126,26 @@ class ConsumerCommand extends Command
 
     protected function declareExchangeQueue($channel, $exchange, $queue, $exchangeType, $routingKey = '')
     {
+        $this->logger->logs('start', 'queueBind', $queue, '');
+
         $channel->exchange_declare($exchange, $exchangeType, false, true, false);
         $channel->queue_declare($queue, false, true, false, false);
         $channel->queue_bind($queue, $exchange, $routingKey);
+
+        $this->logger->logs('finish', 'queueBind', $queue, '');
     }
 
     protected function getConsumer($queueName, $username): QueueConsumer
     {
         $className = 'App\\Consumers\\' . $queueName . 'QueueConsumer';
         if (class_exists($className)) {
-            return new $className($username);
+            return new $className($username, $this->logger);
         } else {
-            throw new \InvalidArgumentException("No consumer found for queue: $queueName");
+            $this->logger->error("No consumer found for queue", ['queuename' => $queueName, 'username' => $username]);
         }
     }
 
-    private function extractUsername($message) // add a config file setting
+    private function extractUsername($message)
     {
         $message = json_decode($message, true);
         if (isset($message['data']['customer']['user_name']))
@@ -143,7 +153,7 @@ class ConsumerCommand extends Command
 
         if (isset($message['data']['user_name']))
             return $message['data']['user_name'];
-        
+
         if (isset($message['data']['machine_name']))
             return $message['data']['machine_name'];
 
@@ -151,6 +161,6 @@ class ConsumerCommand extends Command
             return $message['machine_name'];
 
         if (isset($message['user_name']))
-            return  $message['user_name'];
+            return $message['user_name'];
     }
 }
