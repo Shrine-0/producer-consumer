@@ -31,7 +31,7 @@ class Logger implements LoggerInterface
         $this->auth = $auth;
     }
 
-    public function logs(string $status, string $processname, string $queuename, string $username, string $message = null)
+    public function logs(string $status, string $processname, string $queuename, $username = null, $message = null)
     {
         $message = json_encode([
             'status' => ucfirst($status),
@@ -44,7 +44,7 @@ class Logger implements LoggerInterface
         $this->logger->info($message);
     }
     
-    public function errorLogs(string $status, string $processname, string $queuename, string $username = null, string $message = null)
+    public function errorLogs(string $status, string $processname, string $queuename, $username = null, $message = null)
     {
         $message = json_encode([
             'status' => ucfirst($status),
