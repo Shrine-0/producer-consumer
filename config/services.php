@@ -24,5 +24,8 @@ return [
     'PlanMigration' => [
         'destination_api' => 'https://custmobileappbs-staging.wlink.com.np/v1/base/update/',
         'destination_api_key' => '',
+    ],
+    'slackService' => [
+        'base_uri' => 'https://hooks.slack.com/services/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',
     ]
 ];

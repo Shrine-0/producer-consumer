@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Consumers\QueueConsumer;
+use App\Helpers\Logger;
 use App\Helpers\RedisHelper;
 use Illuminate\Console\Command;
 
@@ -30,11 +31,14 @@ class RetryConsumerCommand extends Command
      */
     private $redisHelper;
 
-    public function __construct(RedisHelper $redisHelper)
+    private $logger;
+
+    public function __construct(RedisHelper $redisHelper, Logger $logger)
     {
         parent::__construct();
 
         $this->redisHelper = $redisHelper;
+        $this->logger = $logger;
     }
 
     /**
@@ -52,28 +56,29 @@ class RetryConsumerCommand extends Command
                 $username = $message['message']['username'];
                 $queue = $message['queue'];
 
+                $this->logger->logs('start', 'retryCommand', $queue, $username);
                 if (isset($username) && isset($queue)) {
                     $newArray = explode('-', $value);
                     $consumer  = $this->getConsumer($queue, $username);
                     $consumer->processQueue($username);
                     $this->redisHelper->deleteKey($username, $module, $newArray[4]);
                 } else {
-                    $this->error('Message is empty');
+                    $this->logger->errorLogs('error', 'retryCommand', $queue, $username);
                 }
+                $this->logger->logs('finish', 'retryCommand', $queue, $username);
             } catch (\Throwable $th) {
-                $this->error('Error processing the message', $th->getMessage());
-                // Log::error('Error processing the message', $th->getMessage());
+                $this->logger->errorLogs('error', 'retryCommandError', $queue, $username);
             }
         }
     }
 
-    protected function getConsumer($queueName, $username): QueueConsumer //make this method reusable later or make it global
+    protected function getConsumer($queueName, $username): QueueConsumer
     {
         $className = 'App\\Consumers\\' . $queueName . 'QueueConsumer';
         if (class_exists($className)) {
-            return new $className($username);
+            return new $className($username, $this->logger);
         } else {
-            throw new \InvalidArgumentException("No consumer found for queue: $queueName"); //
+            $this->logger->error("No consumer found for queue: $queueName");
         }
     }
 }

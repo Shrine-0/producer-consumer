@@ -41,7 +41,7 @@ class OnUserCreateQueueConsumer extends QueueConsumer
     {
         $modifiedData = [];
 
-        $modifiedData['username'] = $data[0]['user_name'] . rand();
+        $modifiedData['username'] = $data[0]['user_name'];
         $modifiedData['client_name'] = $data[1]['name'];
         $modifiedData['email_primary'] = $data[1]['primary_email_address'];
         $modifiedData['email_secondary'] = $data[1]['secondary_email_address'];

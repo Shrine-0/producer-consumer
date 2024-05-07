@@ -33,12 +33,15 @@ class RedisHelper
 
     public function getKeys()
     {
-        $keys = $this->redisConnection->keys($this->redisPrefix . '-messagingError-*');
+        $searchKeyPhrase =  '-messagingError-*';
+        $keys = $this->redisConnection->keys($searchKeyPhrase);
+
         return $keys;
     }
 
     public function getMessage($key)
     {
+        $key = substr($key, 13);
         $message = $this->redisConnection->get($key);
         return $message;
     }
@@ -51,7 +54,7 @@ class RedisHelper
 
     public function buildRedisKey($username, $module = 'messagingError', $timestamp = null)
     {
-        return $this->redisPrefix . "-" . $module . "-" . $username . '-' . $timestamp;
+        return "-" . $module . "-" . $username . '-' . $timestamp;
     }
 
     public function setKey($key, $value)
