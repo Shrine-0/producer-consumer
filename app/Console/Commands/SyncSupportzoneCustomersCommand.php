@@ -137,6 +137,7 @@ class SyncSupportzoneCustomersCommand extends Command
         $numChunks = ceil($customerCount / $chunkSize);
 
         for ($i = 0; $i < $numChunks; $i++) {
+
             $offset = $i * $chunkSize;
             $limit = $chunkSize;
 
