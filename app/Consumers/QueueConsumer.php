@@ -72,7 +72,6 @@ abstract class QueueConsumer
         } catch (\Exception $e) {
             $messages[] = explode("\n", $e->getMessage());
             $this->logger->errorLogs('error', 'ProcessQueue', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($messages[0]));
-            sleep(5);
         }
     }
 
