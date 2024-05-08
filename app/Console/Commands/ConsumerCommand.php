@@ -64,77 +64,83 @@ class ConsumerCommand extends Command
             false,
             60
         );
-        $channel = $connection->channel();
+        while (true) {
+            try {
+                $channel = $connection->channel();
 
-        $this->declareExchangeQueue($channel, $exchange, $queue, 'fanout');
+                $this->declareExchangeQueue($channel, $exchange, $queue, 'fanout');
 
-        $this->logger->notice(" [*] Waiting for messages in $queue. To exit press CTRL+C");
+                $this->logger->notice(" [*] Waiting for messages in $queue. To exit press CTRL+C");
 
-        $callback = function ($msg) use ($queue) {
-            $maxRetry = 5;
-            $retryCount = 0;
+                $callback = function ($msg) use ($queue) {
+                    $maxRetry = 5;
+                    $retryCount = 0;
 
-            $this->logger->notice(" [x] Received in queue : $msg->body");
+                    $this->logger->notice(" [x] Received in queue : $msg->body");
 
-            $username = $this->extractUsername($msg->body);
-            if ($username === null) {
-                $this->logger->error("Username not received", ["queue" => $queue]);
-                return;
-            }
-            $consumerCommandName = config('rabbitmq.consumerCommandName');
+                    $username = $this->extractUsername($msg->body);
+                    if ($username === null) {
+                        $this->logger->error("Username not received", ["queue" => $queue]);
+                        return;
+                    }
+                    $consumerCommandName = config('rabbitmq.consumerCommandName');
 
-            $this->logger->logs('start', "$consumerCommandName[$queue]Consumer", $queue, $username);
+                    $this->logger->logs('start', "$consumerCommandName[$queue]Consumer", $queue, $username);
 
-            while ($retryCount < 5) {
-                try {
-                    $consumer = $this->getConsumer($consumerCommandName[$queue], $username);
-                    $consumer->processQueue($username);
-                    $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-                    break;
-                } catch (\Throwable $e) {
-                    $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-                    $this->logger->errorLogs('error', 'retryOnError', $queue, $username, "Error with retryCount : " . $retryCount + 1);
-                    $retryCount++;
+                    while ($retryCount < 5) {
+                        try {
+                            $consumer = $this->getConsumer($consumerCommandName[$queue], $username);
+                            $consumer->processQueue($username);
+                            $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
+                            break;
+                        } catch (\Throwable $e) {
+                            $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
+                            $this->logger->errorLogs('error', 'retryOnError', $queue, $username, "Error with retryCount : " . $retryCount + 1);
+                            $retryCount++;
+                        }
+                    }
+
+                    if ($retryCount == $maxRetry) {
+                        $this->logger->logs('start', 'redisStoreOnMaxRetry', $queue, $username);
+                        $result = [
+                            'message' => ['username' => $username],
+                            'queue' => $consumerCommandName[$queue]
+                        ];
+                        $now = Carbon::now();
+                        $timestamp = $now->format('Y:m:d::H:i:s');
+                        $this->redisHelper->cacheResult($username, $result, 5, $timestamp); //cache tag concept to be added instead of timestamp
+                        $this->logger->logs('finish', 'redisStoreOnMaxRetry', $queue, $username);
+
+
+                        //multiple is set to false so the broker will nack the message specified by the delivery tag 
+                        //requeue is set to true so when a message is nacked the broker will requeue it again if false the broker will remove the nacked messages
+                        // $msg->delivery_info['channel']->basic_nack($msg->delivery_info['delivery_tag'], false, true);
+                    }
+
+                    $this->logger->logs('finish', "$consumerCommandName[$queue]Consumer", $queue, $username);
+                };
+
+                $channel->basic_consume(
+                    $queue,
+                    '',
+                    false,
+                    false,
+                    false,
+                    false,
+                    $callback
+                );
+
+                while ($channel->is_consuming()) {
+                    $channel->wait();
                 }
+
+                $channel->close();
+                $connection->close();
+            } catch (\Exception $e) {
+                $this->logger->error($e->getMessage());
+                sleep(5);
             }
-
-            if ($retryCount == $maxRetry) {
-                $this->logger->logs('start', 'redisStoreOnMaxRetry', $queue, $username);
-                $result = [
-                    'message' => ['username' => $username],
-                    'queue' => $consumerCommandName[$queue]
-                ];
-                $now = Carbon::now();
-                $timestamp = $now->format('Y:m:d::H:i:s');
-                $this->redisHelper->cacheResult($username, $result, 5, $timestamp); //cache tag concept to be added instead of timestamp
-                $this->logger->logs('finish', 'redisStoreOnMaxRetry', $queue, $username);
-
-
-                //multiple is set to false so the broker will nack the message specified by the delivery tag 
-                //requeue is set to true so when a message is nacked the broker will requeue it again if false the broker will remove the nacked messages
-                // $msg->delivery_info['channel']->basic_nack($msg->delivery_info['delivery_tag'], false, true);
-            }
-
-            $this->logger->logs('finish', "$consumerCommandName[$queue]Consumer", $queue, $username);
-        };
-
-        $channel->basic_consume(
-            $queue,
-            '',
-            false,
-            false,
-            false,
-            false,
-            $callback
-        );
-
-        while ($channel->is_consuming()) {
-            $channel->wait();
         }
-
-        $channel->close();
-        $connection->close();
-
         return Command::SUCCESS;
     }
 
