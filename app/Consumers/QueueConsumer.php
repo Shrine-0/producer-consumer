@@ -70,9 +70,9 @@ abstract class QueueConsumer
             $transformedData = $this->transformPayload($sourceData);
             $this->performHttpRequest($transformedData);
         } catch (\Exception $e) {
-            $messages[]=explode("\n", $e->getMessage());
-
-            $this->logger->errorLogs('error', 'ProcessQueue', $this->queueNameSpecifier($this->getEventName()), $this->username,json_encode($messages[0]));
+            $messages[] = explode("\n", $e->getMessage());
+            $this->logger->errorLogs('error', 'ProcessQueue', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($messages[0]));
+            sleep(5);
         }
     }
 
