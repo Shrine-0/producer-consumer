@@ -33,7 +33,7 @@ class PlanMigrationQueueConsumer extends QueueConsumer
         $modifiedData['pay_plan'] = $data[0]['pay_plan'];
         $modifiedData['plan_category_id'] = $data[0]['plan_category_id'];
         $modifiedData['sync_date'] = Carbon::now();
-        $modifiedData['sync_medium'] = 'Consumer';
+        $modifiedData['sync_medium'] = 'PlanMigrationConsumer';
 
         return $modifiedData;
     }
