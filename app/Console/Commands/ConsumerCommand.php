@@ -168,6 +168,9 @@ class ConsumerCommand extends Command
     private function extractUsername($message)
     {
         $message = json_decode($message, true);
+        if (isset($message['data']['username']))
+            return $message['data']['username'];
+
         if (isset($message['data']['customer']['user_name']))
             return $message['data']['customer']['user_name'];
 
