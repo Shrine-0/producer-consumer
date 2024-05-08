@@ -62,7 +62,7 @@ class ConsumerCommand extends Command
             3.0,
             null,
             false,
-            31
+            60
         );
         $channel = $connection->channel();
 
