@@ -53,7 +53,16 @@ class ConsumerCommand extends Command
             env('RABBITMQ_PORT'),
             env('RABBITMQ_USER'),
             env('RABBITMQ_PASSWORD'),
-            env('RABBITMQ_VHOST')
+            env('RABBITMQ_VHOST'),
+            false,
+            'AMQPLAIN',
+            null,
+            'en_US',
+            3.0,
+            3.0,
+            null,
+            false,
+            31
         );
         $channel = $connection->channel();
 
