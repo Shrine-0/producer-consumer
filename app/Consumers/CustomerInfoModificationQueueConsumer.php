@@ -48,7 +48,7 @@ class CustomerInfoModificationQueueConsumer extends QueueConsumer
         $modifiedData['supportzone_id'] = $data[0]['supportzone_id'];
         $modifiedData['supportzone'] = $data[0]['support_zone'];
         $modifiedData['sync_date'] = Carbon::now();
-        $modifiedData['sync_medium'] = 'Consumer';
+        $modifiedData['sync_medium'] = 'CustomerInfoModificationConsumer';
 
         return $modifiedData;
     }

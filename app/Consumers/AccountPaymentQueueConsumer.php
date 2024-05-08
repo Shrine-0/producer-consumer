@@ -2,6 +2,8 @@
 
 namespace App\Consumers;
 
+use Carbon\Carbon;
+
 class AccountPaymentQueueConsumer extends QueueConsumer
 {
     protected function getEventName(): string
@@ -29,8 +31,9 @@ class AccountPaymentQueueConsumer extends QueueConsumer
         $modifiedData = [];
         $modifiedData['account_status'] = ($data[0]['disable'] == 'N') ? 'enable' : 'disable';
         $modifiedData['expiry_date'] = $data[0]['expiry_date'];
-        // $modifiedData['pay_plan'] = $data[0]['pay_plan'];
         $modifiedData['plan_category_id'] = $data[0]['plan_category_id'];
+        $modifiedData['sync_medium'] = 'AccountPaymentConsumer';
+        $modifiedData['sync_date'] = Carbon::now();
 
         return $modifiedData;
     }

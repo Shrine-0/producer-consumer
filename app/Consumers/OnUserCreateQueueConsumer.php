@@ -54,7 +54,7 @@ class OnUserCreateQueueConsumer extends QueueConsumer
         $modifiedData['supportzone_id'] = $data[0]['supportzone_id'];
         $modifiedData['supportzone'] = $data[0]['support_zone'];
         $modifiedData['sync_date'] = Carbon::now();
-        $modifiedData['sync_medium'] = 'Consumer';
+        $modifiedData['sync_medium'] = 'OnUserCreateConsumer';
         $modifiedData['ownership'] = $this->getOwnership($data[1]['pay_plan']);
         $modifiedData['member_start_date'] = $data[0]['create_date'];
         $modifiedData['expiry_date'] = $data[0]['expiry_date'];
