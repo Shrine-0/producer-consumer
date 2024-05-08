@@ -8,7 +8,7 @@ return [
         'destination_api' => env('BASE_SERVICE_URL') . '/v1/base/update/',
     ],
     'OnUserCreate' => [
-        'destination_api' => env('BASE_SERVICE_URL') . '/v1/base/insert/',
+        'destination_api' => env('BASE_SERVICE_URL') . '/v1/base/insertOrUpdate/',
     ],
     'PlanMigration' => [
         'destination_api' => env('BASE_SERVICE_URL') . '/v1/base/update/',
