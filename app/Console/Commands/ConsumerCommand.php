@@ -162,6 +162,7 @@ class ConsumerCommand extends Command
             return new $className($username, $this->logger);
         } else {
             $this->logger->error("No consumer found for queue", ['queuename' => $queueName, 'username' => $username]);
+            throw new \Exception("No consumer found for queue : $queueName");
         }
     }
 

@@ -32,6 +32,15 @@ class OnUserCreateQueueConsumer extends QueueConsumer
                     ]
                 ],
                 "method" => "get"
+            ],
+            [
+                "api" => "https://services.wlink.com.np/customers/customers/$username/status",
+                "headers" => [
+                    "headers" => [
+                        "Authorization" => "Basic aW50X21vYmlsZWFwcDpWV0paZXBXbWNxM2pha0hr"
+
+                    ]
+                ]
             ]
         ];
         return $data;
@@ -58,7 +67,8 @@ class OnUserCreateQueueConsumer extends QueueConsumer
         $modifiedData['ownership'] = $this->getOwnership($data[1]['pay_plan']);
         $modifiedData['member_start_date'] = $data[0]['create_date'];
         $modifiedData['expiry_date'] = $data[0]['expiry_date'];
-
+        $modifiedData['valid_upto']=$data[2]['days_remaining'];
+        
         return $modifiedData;
     }
 
