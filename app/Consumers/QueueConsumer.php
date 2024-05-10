@@ -115,7 +115,7 @@ abstract class QueueConsumer
         // Check the response status code and handle any errors if necessary
         if ($response->getStatusCode() !== 200) {
             $this->logger->errorLogs('error', 'PerformHttpRequest', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($response->getBody()->getContents()));
-            // throw new \Exception($response->getBody()->getContents());
+            throw new \Exception($response->getBody()->getContents());
         }
 
         // print_r(json_decode($response->getBody()->getContents()));
