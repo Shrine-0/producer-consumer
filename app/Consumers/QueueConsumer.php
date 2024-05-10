@@ -69,7 +69,7 @@ abstract class QueueConsumer
             $sourceData = $this->getDataFromSourceApi($username);
             $transformedData = $this->transformPayload($sourceData);
             $this->performHttpRequest($transformedData);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $messages[] = explode("\n", $e->getMessage());
             $this->logger->errorLogs('error', 'ProcessQueue', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($messages[0]));
             throw new \Exception($e->getMessage());
@@ -115,6 +115,7 @@ abstract class QueueConsumer
         // Check the response status code and handle any errors if necessary
         if ($response->getStatusCode() !== 200) {
             $this->logger->errorLogs('error', 'PerformHttpRequest', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($response->getBody()->getContents()));
+            // throw new \Exception($response->getBody()->getContents());
         }
 
         // print_r(json_decode($response->getBody()->getContents()));
