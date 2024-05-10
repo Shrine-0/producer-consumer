@@ -22,6 +22,15 @@ class AccountPaymentQueueConsumer extends QueueConsumer
                     ]
                 ],
                 "method" => "get"
+            ],
+            [
+                "api" => "https://services.wlink.com.np/customers/customers/$username/status",
+                "headers" => [
+                    "headers" => [
+                        "Authorization" => "Basic aW50X21vYmlsZWFwcDpWV0paZXBXbWNxM2pha0hr"
+
+                    ]
+                ]
             ]
         ];
     }
@@ -34,6 +43,7 @@ class AccountPaymentQueueConsumer extends QueueConsumer
         $modifiedData['plan_category_id'] = $data[0]['plan_category_id'];
         $modifiedData['sync_medium'] = 'AccountPaymentConsumer';
         $modifiedData['sync_date'] = Carbon::now();
+        $modifiedData['valid_upto'] = $data[1]['days_remaining'];
 
         return $modifiedData;
     }
