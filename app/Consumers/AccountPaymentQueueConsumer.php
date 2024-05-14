@@ -37,13 +37,17 @@ class AccountPaymentQueueConsumer extends QueueConsumer
 
     protected function transformPayload($data): array
     {
+        $remainingDaysInDate = Carbon::now();
+        $remainingDaysInDate->addDays((int) $data[1]['days_remaining']);
+        $remainingDaysInDate->setHour(00)->setMinute(00)->setSecond(00);
         $modifiedData = [];
+
         $modifiedData['account_status'] = ($data[0]['disable'] == 'N') ? 'enable' : 'disable';
         $modifiedData['expiry_date'] = $data[0]['expiry_date'];
         $modifiedData['plan_category_id'] = $data[0]['plan_category_id'];
         $modifiedData['sync_medium'] = 'AccountPaymentConsumer';
         $modifiedData['sync_date'] = Carbon::now();
-        $modifiedData['valid_upto'] = $data[1]['days_remaining'];
+        $modifiedData['valid_upto'] = $remainingDaysInDate;
 
         return $modifiedData;
     }

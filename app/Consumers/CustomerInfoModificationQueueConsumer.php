@@ -47,6 +47,9 @@ class CustomerInfoModificationQueueConsumer extends QueueConsumer
 
     protected function transformPayload($data): array
     {
+        $remainingDaysInDate = Carbon::now();
+        $remainingDaysInDate->addDays((int) $data[2]['days_remaining']);
+        $remainingDaysInDate->setHour(00)->setMinute(00)->setSecond(00);
         $modifiedData = [];
 
         $modifiedData['client_name'] = $data[1]['name'];
@@ -58,7 +61,7 @@ class CustomerInfoModificationQueueConsumer extends QueueConsumer
         $modifiedData['supportzone'] = $data[0]['support_zone'];
         $modifiedData['sync_date'] = Carbon::now();
         $modifiedData['sync_medium'] = 'CustomerInfoModificationConsumer';
-        $modifiedData['valid_upto'] = $data[2]['days_remaining'];
+        $modifiedData['valid_upto'] = $remainingDaysInDate;
 
         return $modifiedData;
     }
