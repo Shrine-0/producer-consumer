@@ -32,12 +32,24 @@ class CustomerInfoModificationQueueConsumer extends QueueConsumer
                     ]
                 ],
                 "method" => "get"
+            ],
+            [
+                "api" => "https://services.wlink.com.np/customers/customers/$username/status",
+                "headers" => [
+                    "headers" => [
+                        "Authorization" => "Basic aW50X21vYmlsZWFwcDpWV0paZXBXbWNxM2pha0hr"
+
+                    ]
+                ]
             ]
         ];
     }
 
     protected function transformPayload($data): array
     {
+        $remainingDaysInDate = Carbon::now();
+        $remainingDaysInDate->addDays((int) $data[2]['days_remaining']);
+        $remainingDaysInDate->setHour(00)->setMinute(00)->setSecond(00);
         $modifiedData = [];
 
         $modifiedData['client_name'] = $data[1]['name'];
@@ -48,7 +60,8 @@ class CustomerInfoModificationQueueConsumer extends QueueConsumer
         $modifiedData['supportzone_id'] = $data[0]['supportzone_id'];
         $modifiedData['supportzone'] = $data[0]['support_zone'];
         $modifiedData['sync_date'] = Carbon::now();
-        $modifiedData['sync_medium'] = 'Consumer';
+        $modifiedData['sync_medium'] = 'CustomerInfoModificationConsumer';
+        $modifiedData['valid_upto'] = $remainingDaysInDate;
 
         return $modifiedData;
     }
