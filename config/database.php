@@ -58,7 +58,22 @@ return [
             'charset' => 'UTF8',
             'prefix' => '',
             'prefix_schema' => ''
-        ]
+        ],
+
+        'esupport' => [
+            'driver' => 'oracle',
+            'tns' => '',
+            'host' => ENV('DB_ESUPPORT_HOST'),
+            'port' => '1521',
+            'service_name' => ENV('DB_ESUPPORT_SERVICE_NAME'),
+            'database' => ENV('DB_ESUPPORT_SERVICE_NAME'),
+            'username' => ENV('DB_ESUPPORT_USERNAME'),
+            'password' => ENV('DB_ESUPPORT_PASSWORD'),
+            'charset' => ENV('DB_ESUPPORT_CHARSET'),
+            'prefix' => '',
+            'prefix_schema' => ''
+        ],
+
     ],
 
     /*
