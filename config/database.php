@@ -60,20 +60,6 @@ return [
             'prefix_schema' => ''
         ],
 
-        'esupport' => [
-            'driver' => 'oracle',
-            'tns' => '',
-            'host' => 'appsdb-scan.wlink.com.np',
-            'port' => '1521',
-            'service_name' => 'appsdb',
-            'database' => 'appsdb',
-            'username' => 'wlinksupport',
-            'password' => 'sup1port23',
-            'charset' => 'AL32UTF8',
-            'prefix' => '',
-            'prefix_schema' => ''
-        ],
-
     ],
 
     /*
