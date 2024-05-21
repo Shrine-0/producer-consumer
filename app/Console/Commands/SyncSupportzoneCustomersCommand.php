@@ -194,7 +194,8 @@ class SyncSupportzoneCustomersCommand extends Command
                 ce.expiry_date AS expiry_date
             ")
             ->where("ce.supportzone_id", $supportzone_id)
-            ->orderByRaw('ce.create_date asc')
+            // ->orderByRaw('ce.create_date asc')
+            ->orderBy('ce.user_name')
             ->offset($offset)
             ->limit($limit)
             ->get();

@@ -58,7 +58,8 @@ return [
             'charset' => 'UTF8',
             'prefix' => '',
             'prefix_schema' => ''
-        ]
+        ],
+
     ],
 
     /*
