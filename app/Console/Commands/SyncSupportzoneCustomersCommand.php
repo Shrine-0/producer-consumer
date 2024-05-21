@@ -180,8 +180,14 @@ class SyncSupportzoneCustomersCommand extends Command
                 info.per_cont_email_primary AS email_primary,
                 info.per_cont_email_secondary AS email_secondary,
                 CASE WHEN ce.disable = 'N' THEN 'enable' ELSE 'disable' END AS account_status,
-                info.per_cont_mobile AS primary_number,
-                info.per_cont_mobile_secondary AS secondary_number,
+                CASE
+                    WHEN info.account_type='PERSONAL'
+                    THEN info.per_cont_mobile
+                    ELSE info.org_cont_mobile end AS primary_number,
+                CASE
+                    WHEN info.account_type='PERSONAL'
+                    THEN info.per_cont_mobile_secondary
+                    ELSE info.org_cont_mobile_secondary end AS secondary_number,
                 info.account_type,
                 ce.pay_plan,
                 ce.plan_category_id,
