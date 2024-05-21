@@ -41,9 +41,12 @@ class Logger implements LoggerInterface
             'message' => $message
         ]);
 
-        $this->logger->info($message);
+        // Add ANSI escape code for red colour
+        $coloredMessage = "\033[32m" . $message . "\033[0m"; // Green colour
+
+        $this->logger->info($coloredMessage);
     }
-    
+
     public function errorLogs(string $status, string $processname, string $queuename, $username = null, $message = null)
     {
         $message = json_encode([
@@ -53,8 +56,10 @@ class Logger implements LoggerInterface
             'username' => $username,
             'message' => $message
         ]);
+        // Add ANSI escape code for red colour
+        $coloredMessage = "\033[31m" . $message . "\033[0m"; // Red colour
 
-        $this->logger->error($message);
+        $this->logger->error($coloredMessage);
     }
 
     public function debug(string $message, array $context = []): void
