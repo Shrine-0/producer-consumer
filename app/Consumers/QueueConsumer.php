@@ -4,6 +4,7 @@ namespace App\Consumers;
 
 use App\Helpers\Logger;
 use GuzzleHttp\Client;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 
@@ -110,6 +111,7 @@ abstract class QueueConsumer
                 'Content-Type' => 'application/json'
             ],
             'json' => $data,
+            'query' => $this->getQueryParams()
         ]);
         $this->logger->logs('finish', 'PerformHttpRequest', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($response->getBody()->getContents()));
         // Check the response status code and handle any errors if necessary
@@ -120,6 +122,8 @@ abstract class QueueConsumer
 
         // print_r(json_decode($response->getBody()->getContents()));
     }
+
+    abstract protected function getQueryParams(): array;
 
     public function queueNameSpecifier(string $eventName)
     {

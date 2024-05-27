@@ -59,6 +59,14 @@ class AccountPaymentQueueConsumer extends QueueConsumer
 
     protected function destinationApiQueryParams($username): string
     {
-        return "$username?event=customerInfo";
+        return "$username";
+    }
+
+    protected function getQueryParams(): array
+    {
+        return [
+            "event" => "OnAccountPay",
+            "username" => $this->username
+        ];
     }
 }
