@@ -16,6 +16,9 @@ return [
     'Transaction' => [
         'destination_api' => env('BASE_SERVICE_URL') . '/v1/base/update/',
     ],
+    'NetTv' => [
+        'destination_api' => env('BASE_SERVICE_URL') . '/v1/base/update/',
+    ],
     'slackService' => [
         'base_uri' => 'https://hooks.slack.com/services/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',
     ]

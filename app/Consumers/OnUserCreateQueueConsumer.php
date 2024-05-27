@@ -86,6 +86,14 @@ class OnUserCreateQueueConsumer extends QueueConsumer
         return "";
     }
 
+    protected function getQueryParams(): array
+    {
+        return [
+            "event" => "OnUserCreate",
+            "username" => $this->username
+        ];
+    }
+
     private function getOwnership($payPlan)
     {
         switch ($payPlan) {
