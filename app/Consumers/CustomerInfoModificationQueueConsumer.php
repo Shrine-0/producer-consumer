@@ -73,7 +73,15 @@ class CustomerInfoModificationQueueConsumer extends QueueConsumer
 
     protected function destinationApiQueryParams($username): string
     {
-        return "$username?event=customerInfo";
+        return "$username";
+    }
+
+    protected function getQueryParams(): array
+    {
+        return [
+            "event" => "BaseInfoUpdate",
+            "username" => $this->username
+        ];
     }
 
     private function getOwnership($payPlan)
