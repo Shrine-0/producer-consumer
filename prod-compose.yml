@@ -1,22 +1,18 @@
 version: "3"
-
 services:
-  # Supervisor
   supervisord:
     image: gitlab.wlink.com.np:4567/customer-mobileapp/consumer-service:supervisord-release
-    restart: always
-    container_name: cust_mobile-app-consumer-supervisor
-    networks:
-      - cust_mobile-app-consumer-network
-    environment:
-      - TZ="Asia/Kathmandu"
     logging:
       driver: syslog
       options:
-        syslog-address: ${LOGGER:-}
+        syslog-address: "udp://10.21.7.115:1514"
         syslog-facility: daemon
         tag: cust_mobile-app-consumer-supervisor
-
-networks:
-  cust_mobile-app-consumer-network:
-    external: true
+    deploy:
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+    env_file:
+      - .env
