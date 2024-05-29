@@ -1,7 +1,6 @@
 stages:
   - prepare
-  # - build-stage
-  - build-prod
+  - build
   - publish
 
 variables:
@@ -25,7 +24,7 @@ composer_install:
     - release
 
 build_stage:
-  stage: build-stage
+  stage: build
   before_script:
     - chmod +x setup_dev_env.sh
     - ./setup_dev_env.sh
@@ -41,7 +40,7 @@ build_stage:
     - develop
 
 build_prod:
-  stage: build-prod
+  stage: build
   before_script:
     - chmod +x setup_prod_env.sh
     - ./setup_prod_env.sh
