@@ -4,25 +4,25 @@ stages:
   - build-prod
   - publish
 
-variables:
-  SUPERVISOR_IMAGE: $CI_REGISTRY_IMAGE:supervisord-$CI_COMMIT_REF_SLUG
+# variables:
+#   SUPERVISOR_IMAGE: $CI_REGISTRY_IMAGE:supervisord-$CI_COMMIT_REF_SLUG
 
-composer_install:
-  stage: prepare
-  script:
-    - composer install --ignore-platform-reqs --no-scripts
-  artifacts:
-    paths:
-      - vendor/
-    expire_in: "1 days"
-  cache:
-    paths:
-      - vendor/
-  tags:
-    - php-composer
-  only:
-    # - develop
-    - release
+# composer_install:
+#   stage: prepare
+#   script:
+#     - composer install --ignore-platform-reqs --no-scripts
+#   artifacts:
+#     paths:
+#       - vendor/
+#     expire_in: "1 days"
+#   cache:
+#     paths:
+#       - vendor/
+#   tags:
+#     - php-composer
+#   only:
+#     # - develop
+#     - release
 
 # build_stage:
 #   stage: build-stage
@@ -40,34 +40,34 @@ composer_install:
 #   only:
 #     - develop
 
-build_prod:
-  stage: build-prod
-  before_script:
-    - chmod +x setup_prod_env.sh
-    - ./setup_prod_env.sh
-    - docker build -t ${SUPERVISOR_IMAGE} --file supervisord.Dockerfile .
-  script:
-    - docker login ${CI_REGISTRY} -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN}
-    - docker push ${SUPERVISOR_IMAGE}
-  after_script:
-    - docker image rm -f ${SUPERVISOR_IMAGE} || true
-  tags:
-    - php-shell
-  only:
-    - release
-
-# publish_staging:
-#   stage: publish
-#   dependencies:
-#     - build_stage
+# build_prod:
+#   stage: build-prod
+#   before_script:
+#     - chmod +x setup_prod_env.sh
+#     - ./setup_prod_env.sh
+#     - docker build -t ${SUPERVISOR_IMAGE} --file supervisord.Dockerfile .
 #   script:
-#     - curl -f -X POST ${STAGE_SUPERVISOR_WEBHOOK}
+#     - docker login ${CI_REGISTRY} -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN}
+#     - docker push ${SUPERVISOR_IMAGE}
+#   after_script:
+#     - docker image rm -f ${SUPERVISOR_IMAGE} || true
 #   tags:
 #     - php-shell
 #   only:
-#     - develop
-#   environment:
-#     name: staging
+#     - release
+
+publish_staging:
+  stage: publish
+  script:
+    #- curl -f -X POST ${STAGE_SUPERVISOR_WEBHOOK}
+    - env | grep "STAGE_" | sed "s/STAGE_//g" > .env
+    - docker -H ${STAGE_HOST} stack deploy -c stage-compose.yml stage-custmobileapp-consumer
+  tags:
+    - php-shell
+  only:
+    - develop
+  environment:
+    name: staging
 
 publish_prod:
   stage: publish
@@ -75,9 +75,12 @@ publish_prod:
     - build_prod
   script:
     - curl -f -X POST ${PROD_SUPERVISOR_WEBHOOK}
+    - env | grep "STAGE_" | sed "s/STAGE_//g" > .env
+    - docker -H ${STAGE_HOST} stack deploy -c prod-compose.yml custmobileapp-consumer
   tags:
     - php-shell
   only:
     - release
   environment:
     name: production
+  when: manual
