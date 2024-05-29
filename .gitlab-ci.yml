@@ -71,8 +71,6 @@ publish_staging:
 
 publish_prod:
   stage: publish
-  dependencies:
-    - build_prod
   script:
     - curl -f -X POST ${PROD_SUPERVISOR_WEBHOOK}
     - env | grep "STAGE_" | sed "s/STAGE_//g" > .env
