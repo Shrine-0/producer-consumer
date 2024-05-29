@@ -14,5 +14,49 @@ services:
         delay: 10s
         order: start-first
         failure_action: rollback
+      placement:
+        constraints:
+          - "node.labels.project==mobileapp"
+      resources:
+        limits:
+          cpus: "8"
+          memory: 8G
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 3
+        window: 60s
+    networks:
+      - custmobileapp-net
+
+  custmobileapp-consumer-redis:
+    image: redis:7.2.4
+    container_name: custmobileapp-consumer-redis
+    restart: always
+    ports:
+      - "6379"
+    command:
+      - redis-server
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "udp://10.21.7.115:514"
+        syslog-facility: "daemon"
+        tag: 'custmobileapp-consumer-redis'
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.project==mobileapp"
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+    networks:
+      - custmobileapp-net
+      
+networks:
+  custmobileapp-net:
+    external: true 
+       
     env_file:
       - .env

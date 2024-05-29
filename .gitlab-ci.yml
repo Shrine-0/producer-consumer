@@ -73,8 +73,8 @@ publish_dc1-swarm-cluster:
   stage: publish
   script:
     - curl -f -X POST ${PROD_SUPERVISOR_WEBHOOK}
-    - env | grep "STAGE_" | sed "s/STAGE_//g" > .env
-    - docker -H ${STAGE_HOST} stack deploy -c prod-compose.yml custmobileapp-consumer
+    - env | grep "PROD_" | sed "s/PROD_//g" > .env
+    - docker -H ${PROD_HOST} stack deploy -c prod-compose.yml custmobileapp-consumer
   tags:
     - php-shell
   only:
