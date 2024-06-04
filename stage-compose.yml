@@ -1,0 +1,18 @@
+version: "3"
+services:
+  supervisord:
+    image: gitlab.wlink.com.np:4567/customer-mobileapp/consumer-service:supervisord-develop
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "udp://10.21.7.115:1514"
+        syslog-facility: daemon
+        tag: stage-cust_mobile-app-consumer-supervisor
+    deploy:
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+    env_file:
+      - .env

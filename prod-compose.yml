@@ -1,0 +1,60 @@
+version: "3"
+services:
+  supervisord:
+    image: gitlab.wlink.com.np:4567/customer-mobileapp/consumer-service:supervisord-release
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "udp://10.21.7.115:1514"
+        syslog-facility: daemon
+        tag: custmobileapp-consumer-supervisor
+    deploy:
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+      placement:
+        constraints:
+          - "node.labels.project==mobileapp"
+      resources:
+        limits:
+          cpus: "8"
+          memory: 8G
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 3
+        window: 60s
+    env_file:
+      - .env
+    networks:
+      - custmobileapp-net
+
+  redis:
+    image: redis:7.2.4
+    hostname: custmobileapp-consumer-redis
+    ports:
+      - "6379"
+    command:
+      - redis-server
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "udp://10.21.7.115:514"
+        syslog-facility: "daemon"
+        tag: 'custmobileapp-consumer-redis'
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.project==mobileapp"
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+    networks:
+      - custmobileapp-net
+      
+networks:
+  custmobileapp-net:
+    external: true 
