@@ -7,7 +7,7 @@ services:
       options:
         syslog-address: "udp://10.21.7.115:1514"
         syslog-facility: daemon
-        tag: cust_mobile-app-consumer-supervisor
+        tag: custmobileapp-consumer-supervisor
     deploy:
       update_config:
         parallelism: 1
@@ -26,13 +26,14 @@ services:
         delay: 3s
         max_attempts: 3
         window: 60s
+    env_file:
+      - .env
     networks:
       - custmobileapp-net
 
-  custmobileapp-consumer-redis:
+  redis:
     image: redis:7.2.4
-    container_name: custmobileapp-consumer-redis
-    restart: always
+    hostname: custmobileapp-consumer-redis
     ports:
       - "6379"
     command:
@@ -57,6 +58,3 @@ services:
 networks:
   custmobileapp-net:
     external: true 
-       
-    env_file:
-      - .env

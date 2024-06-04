@@ -81,3 +81,16 @@ publish_dc1-swarm-cluster:
   environment:
     name: production
   when: manual
+
+mobileapp-swarm-cluster:
+  stage: publish
+  script:
+    - env | grep "PROD_" | sed "s/PROD_//g" > .env
+    - docker -H ${PROD_HOST} stack deploy -c prod-compose.yml custmobileapp-consumer
+  tags:
+    - php-shell
+  only:
+    - release
+  environment:
+    name: production
+  when: manual
