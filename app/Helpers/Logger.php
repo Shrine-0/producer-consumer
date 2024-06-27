@@ -34,6 +34,10 @@ class Logger implements LoggerInterface
     public function logs(string $status, string $processname, string $queuename, $username = null, $message = null)
     {
         $message = json_encode([
+            'service' => strtoupper('consumerservice'),
+            'ip' => $this->request->getClientIp(),
+            'method' => $this->request->getMethod(),
+            'url' => $this->request->url(),
             'status' => ucfirst($status),
             'processName' => $processname,
             'queueName' => $queuename,
@@ -42,14 +46,18 @@ class Logger implements LoggerInterface
         ]);
 
         // Add ANSI escape code for red colour
-        $coloredMessage = "\033[32m" . $message . "\033[0m"; // Green colour
+        // $coloredMessage = "\033[32m" . $message . "\033[0m"; // Green colour
 
-        $this->logger->info($coloredMessage);
+        $this->logger->info($message);
     }
 
     public function errorLogs(string $status, string $processname, string $queuename, $username = null, $message = null)
     {
         $message = json_encode([
+            'service' => strtoupper('consumerservice'),
+            'ip' => $this->request->getClientIp(),
+            'method' => $this->request->getMethod(),
+            'url' => $this->request->url(),
             'status' => ucfirst($status),
             'processName' => $processname,
             'queueName' => $queuename,
@@ -57,9 +65,9 @@ class Logger implements LoggerInterface
             'message' => $message
         ]);
         // Add ANSI escape code for red colour
-        $coloredMessage = "\033[31m" . $message . "\033[0m"; // Red colour
+        // $coloredMessage = "\033[31m" . $message . "\033[0m"; // Red colour
 
-        $this->logger->error($coloredMessage);
+        $this->logger->error($message);
     }
 
     public function debug(string $message, array $context = []): void
