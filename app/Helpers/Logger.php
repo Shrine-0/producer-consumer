@@ -35,9 +35,6 @@ class Logger implements LoggerInterface
     {
         $message = json_encode([
             'service' => strtoupper('consumerservice'),
-            'ip' => $this->request->getClientIp(),
-            'method' => $this->request->getMethod(),
-            'url' => $this->request->url(),
             'status' => ucfirst($status),
             'processName' => $processname,
             'queueName' => $queuename,
@@ -55,9 +52,6 @@ class Logger implements LoggerInterface
     {
         $message = json_encode([
             'service' => strtoupper('consumerservice'),
-            'ip' => $this->request->getClientIp(),
-            'method' => $this->request->getMethod(),
-            'url' => $this->request->url(),
             'status' => ucfirst($status),
             'processName' => $processname,
             'queueName' => $queuename,
