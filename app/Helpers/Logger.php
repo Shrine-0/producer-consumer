@@ -34,7 +34,7 @@ class Logger implements LoggerInterface
     public function logs(string $status, string $processname, string $queuename, $username = null, $message = null)
     {
         $message = json_encode([
-            'service' => strtoupper('consumerservice'),
+            'service' => 'consumerservice',
             'status' => ucfirst($status),
             'processName' => $processname,
             'queueName' => $queuename,
@@ -51,7 +51,7 @@ class Logger implements LoggerInterface
     public function errorLogs(string $status, string $processname, string $queuename, $username = null, $message = null)
     {
         $message = json_encode([
-            'service' => strtoupper('consumerservice'),
+            'service' => 'consumerservice',
             'status' => ucfirst($status),
             'processName' => $processname,
             'queueName' => $queuename,
