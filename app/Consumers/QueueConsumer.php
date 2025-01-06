@@ -104,7 +104,7 @@ abstract class QueueConsumer
     protected function performHttpRequest($data)
     {
         // echo ($this->getDestinationApiUrl());
-        $this->logger->logs('start', 'PerformHttpRequest', $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($data));
+        $this->logger->logs('start', __METHOD__ , $this->queueNameSpecifier($this->getEventName()), $this->username, json_encode($data));
         $method = $this->getDestinationApiHttpMethod();
         $response = $this->httpClient->$method($this->getDestinationApiUrl(), [
             'headers' => [

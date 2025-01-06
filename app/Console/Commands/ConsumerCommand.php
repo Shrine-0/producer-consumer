@@ -81,6 +81,7 @@ class ConsumerCommand extends Command
                     $username = $this->extractUsername($msg->body);
                     if ($username === null) {
                         $this->logger->error("Username not received", ["queue" => $queue]);
+                        $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
                         return;
                     }
                     $consumerCommandName = config('rabbitmq.consumerCommandName');

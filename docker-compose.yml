@@ -1,6 +1,6 @@
 version: "3"
 services:
-    #command
+    # command
     # cust_mobile-app-consumer:
     #     build:
     #         context: .
@@ -22,35 +22,35 @@ services:
             - .:/app
         command: install
 
-    #rabbitmq
-    # cust_mobile-app-consumer-rabbitmq:
-    #     image: rabbitmq:3-management
-    #     container_name: cust_mobile-app-consumer-rabbitmq
-    #     ports:
-    #         - "5672:5672" # AMQP
-    #         - "15672:15672" # RabbitMQ Management UI
-    #     environment:
-    #         - RABBITMQ_DEFAULT_USER=guest
-    #         - RABBITMQ_DEFAULT_PASS=guest
-    #         - RABBITMQ_DEFAULT_VHOST=cmag
-    #     volumes:
-    #         - ./rabbitmq-data:/var/lib/rabbitmq
-    #     networks:
-    #         - cust_mobile-app-consumer-network
-
-    #supervisor
-    cust_mobile-app-consumer-supervisor:
-        build:
-            context: .
-            dockerfile: supervisord.Dockerfile
-        image: cust_mobile-app-consumer-supervisor
-        restart: always
-        container_name: cust_mobile-app-consumer-supervisor
+    # rabbitmq
+    cust_mobile-app-consumer-rabbitmq:
+        image: rabbitmq:3-management
+        container_name: cust_mobile-app-consumer-rabbitmq
+        ports:
+            - "5672:5672" # AMQP
+            - "15672:15672" # RabbitMQ Management UI
+        environment:
+            - RABBITMQ_DEFAULT_USER=guest
+            - RABBITMQ_DEFAULT_PASS=guest
+            - RABBITMQ_DEFAULT_VHOST=cmag
         volumes:
-            - ./:/var/www/html
-            - ./supervisord/supervisord.conf:/etc/supervisord.conf
+            - ./rabbitmq-data:/var/lib/rabbitmq
         networks:
             - cust_mobile-app-consumer-network
+
+    #supervisor
+    # cust_mobile-app-consumer-supervisor:
+    #     build:
+    #         context: .
+    #         dockerfile: supervisord.Dockerfile
+    #     image: cust_mobile-app-consumer-supervisor
+    #     restart: always
+    #     container_name: cust_mobile-app-consumer-supervisor
+    #     volumes:
+    #         - ./:/var/www/html
+    #         - ./supervisord/supervisord.conf:/etc/supervisord.conf
+    #     networks:
+    #         - cust_mobile-app-consumer-network
 
 #Docker Networks
 networks:
