@@ -10,12 +10,10 @@ use Illuminate\Support\Facades\Redis as RRR;
 class RedisHelper
 {
     private $redisConnection;
-    private $redisPrefix;
 
     public function __construct()
     {
         $this->redisConnection = RRR::connection();
-        $this->redisPrefix = env('REDIS_PREFIX');
     }
 
     public function cacheResult($username, $result, $min, $timestamp = null)

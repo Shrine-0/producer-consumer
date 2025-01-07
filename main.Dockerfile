@@ -1,5 +1,9 @@
 # Base image for supervisor
-FROM gitlab.wlink.com.np:4567/samir.husen/php-cli-oracle-pgsql-base-image:latest
+# FROM gitlab.wlink.com.np:4567/samir.husen/php-cli-oracle-pgsql-base-image:latest
+FROM php:8.1-cli-bullseye AS production
+
+RUN sudo apt install && sudo apt update
+
 
 # Set working directory
 WORKDIR /var/www/html

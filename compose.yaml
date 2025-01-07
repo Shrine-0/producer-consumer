@@ -15,12 +15,12 @@ services:
     #         - cust_mobile-app-consumer-network
 
     #composer
-    composer:
-        image: composer:latest
-        container_name: cust_mobile-app-consumer-composer
-        volumes:
-            - .:/app
-        command: install
+    #composer:
+    #    image: composer:latest
+    #    container_name: cust_mobile-app-consumer-composer
+    #    volumes:
+    #        - .:/app
+    #    command: install
 
     # rabbitmq
     cust_mobile-app-consumer-rabbitmq:

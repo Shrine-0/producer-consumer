@@ -86,7 +86,7 @@ class ConsumerCommand extends Command
                     }
                     $consumerCommandName = config('rabbitmq.consumerCommandName');
 
-                    $this->logger->logs('start', "$consumerCommandName[$queue]Consumer", $queue, $username);
+                    $this->logger->logs('start', $consumerCommandName[$queue] . "Consumer", $queue, $username);
 
                     while ($retryCount < 5) {
                         try {
